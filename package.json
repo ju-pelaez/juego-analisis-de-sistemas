@@ -1,0 +1,29 @@
+{
+  "name": "juego-analisis-de-sistemas",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Modo Analista: juego para aprender Análisis de Sistemas capítulo por capítulo.",
+  "author": "Juan Pablo Peláez Pino",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@remotion/player": "^4.0.540",
+    "@remotion/transitions": "^4.0.540",
+    "mqtt": "^5.16.1",
+    "qrcode-generator": "^2.0.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.540"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.2.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}
