@@ -24,7 +24,7 @@ function VideoBase<P extends Record<string, unknown>>(
 ) {
   const menos = useMenosMovimiento();
   const player = useRef<PlayerRef>(null);
-  useImperativeHandle(ref, () => player.current, []);
+  useImperativeHandle(ref, () => player.current as PlayerRef, []);
 
   useEffect(() => {
     const p = player.current;

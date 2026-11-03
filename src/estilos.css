@@ -414,8 +414,10 @@ a { color: var(--c-dat); }
 .cert-impreso { display: none; }
 @media print {
   body { background: #fff; }
-  .app > *:not(.cert-impreso) { display: none !important; }
+  body * { visibility: hidden; }
+  .cert-impreso, .cert-impreso * { visibility: visible; }
   .cert-impreso {
+    position: fixed; inset: 0; background: #fff;
     display: flex !important; flex-direction: column; align-items: center; justify-content: center; text-align: center;
     border: 6px double #7A5B00; padding: 40px; min-height: 90vh; color: #111; font-family: var(--f-texto);
   }
