@@ -18,6 +18,8 @@ export type CinematicaProps = {
 
 const ESCENA1 = 80, ESCENA2 = 130, ESCENA3 = 75, T1 = 18, T2 = 15;
 export const DURACION_CINE = ESCENA1 + ESCENA2 + ESCENA3 - T1 - T2;
+// Cuadro en que empieza cada escena (las transiciones se montan sobre la escena anterior).
+export const ESCENAS = [0, ESCENA1 - T1, ESCENA1 - T1 + ESCENA2 - T2];
 
 const Portadilla: React.FC<CinematicaProps> = ({ n, titulo, sub, dice, color }) => {
   const f = useCurrentFrame();

@@ -3,6 +3,7 @@
 // la barra de avance y la carta que se arrastra con el dedo (o con el mouse) hasta una zona.
 import React, { useEffect, useRef, useState } from 'react';
 import { CaraProfe } from './Profe';
+import { nombre } from '../estado';
 
 export type AvisoDato = { ok: boolean; texto: string; por?: string } | null;
 
@@ -24,7 +25,7 @@ export const Aviso: React.FC<{ aviso: AvisoDato; vacio?: string }> = ({ aviso, v
         <>
           <CaraProfe pose={aviso.ok ? 'celebra' : 'explica'} size={44} />
           <span>
-            <span className="marca-aviso">{aviso.ok ? '✓ ¡Bien!' : '✗ Ojo'}</span>{' '}
+            <span className="marca-aviso">{aviso.ok ? `✓ ¡Bien${nombre() ? ', ' + nombre() : ''}!` : `✗ Ojo${nombre() ? ', ' + nombre() : ''}`}</span>{' '}
             <b>{aviso.texto}</b>{aviso.por ? <> {aviso.por}</> : null}
           </span>
           {aviso.ok && r >= 2 && <span className="racha" aria-label={`Racha de ${r} aciertos`}>🔥 x{r}</span>}

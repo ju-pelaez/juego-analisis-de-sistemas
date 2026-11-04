@@ -1,15 +1,16 @@
 // Capitulo.tsx
 // Un capítulo de principio a fin: cinemática → fichas → minijuego → preguntas → insignia.
 // El reto final cambia las dos últimas fases por el resultado y el certificado.
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import type { Capitulo as Cap, Ficha } from './datos/capitulos';
-import { estrellasDe, sonar, useVertical, type ResultadoCap } from './estado';
+import { conNombre, estrellasDe, sonar, type ResultadoCap } from './estado';
 import { Video } from './componentes/Video';
 import { Glifo } from './componentes/Glifo';
 import { CaraProfe, fotoProfe, NOMBRE_PROFE } from './componentes/Profe';
 import { Preguntas } from './componentes/Preguntas';
 import { Estrellas } from './componentes/Piezas';
-import { Cinematica, ConceptoBucle, DURACION_CINE } from './remotion/Cinematica';
+import { ConceptoBucle } from './remotion/Cinematica';
+import { Cine } from './componentes/Cine';
 import { Certificado, DURACION_CERT, DURACION_INSIGNIA, Insignia } from './remotion/Extras';
 import { Deslizar } from './juegos/Deslizar';
 import { Frontera } from './juegos/Frontera';
@@ -66,16 +67,16 @@ export const Capitulo: React.FC<{
   cap: Cap; nombre: string; siguiente?: Cap; puntosTotales: number;
   alGuardar: (r: ResultadoCap) => void; alSalir: () => void; alIr: (id: string) => void;
 }> = ({ cap, nombre, siguiente, puntosTotales, alGuardar, alSalir, alIr }) => {
-  const vertical = useVertical();
   const [fase, setFase] = useState<Fase>('cine');
   const [ficha, setFicha] = useState(0);
   const [juego, setJuego] = useState({ a: 0, t: 0 });
   const [resultado, setResultado] = useState<ResultadoCap | null>(null);
   const [caso, setCaso] = useState('');
   const esFinal = cap.juego.tipo === 'final';
-  const cine = useMemo(() => ({ id: cap.id, n: cap.n, titulo: cap.titulo, sub: cap.sub, lema: cap.lema, dice: cap.dice, color: cap.color }), [cap]);
 
-  const ir = (f: Fase) => { setFase(f); window.scrollTo({ top: 0 }); };
+  // Fases ya vistas: se puede volver a ellas (atrás) y regresar (adelante) desde la barra de fases.
+  const [vistas, setVistas] = useState<Fase[]>(['cine']);
+  const ir = (f: Fase) => { setFase(f); setVistas((v) => (v.includes(f) ? v : [...v, f])); window.scrollTo({ top: 0 }); };
   const terminar = (a: number, t: number) => {
     const r: ResultadoCap = { aciertos: a, total: t, estrellas: estrellasDe(a, t), puntos: a * 10 + (estrellasDe(a, t) === 3 ? 20 : 0) };
     setResultado(r);
@@ -119,9 +120,11 @@ export const Capitulo: React.FC<{
       </div>
       <nav className="fases" aria-label="Fases del capítulo">
         {fases.map((f, k) => (
-          <div key={f.id} className={'fase' + (k < iFase ? ' hecha' : k === iFase ? ' actual' : '')} aria-current={k === iFase ? 'step' : undefined}>
+          <button key={f.id} type="button" className={'fase' + (k < iFase ? ' hecha' : k === iFase ? ' actual' : '')} aria-current={k === iFase ? 'step' : undefined}
+            disabled={k === iFase || !vistas.includes(f.id) || (f.id === 'fin' && !resultado)} onClick={() => ir(f.id)}
+            title={vistas.includes(f.id) ? `Ir a ${f.n}` : 'Todavía no'}>
             <i /><span>{f.n}</span>
-          </div>
+          </button>
         ))}
       </nav>
       <header className="titulo-cap">
@@ -129,26 +132,13 @@ export const Capitulo: React.FC<{
         <div><p>Capítulo {cap.n} · {cap.caso}</p><h1>{cap.titulo}</h1></div>
       </header>
 
-      {fase === 'cine' && (
-        <section className="zona-cine" aria-label="Cinemática de entrada">
-          <div className="marco-video">
-            <Video key={vertical ? 'v' : 'h'} componente={Cinematica} props={cine} duracion={DURACION_CINE}
-              ancho={vertical ? 720 : 1280} alto={vertical ? 1040 : 720}
-              etiqueta={`Cinemática del capítulo ${cap.n}: ${cap.titulo}. ${cap.dice} ${cap.lema}`}
-              alTerminar={() => ir('fichas')} />
-          </div>
-          <div className="acciones">
-            <span className="nota">La cinemática dura unos 8 segundos.</span>
-            <button className="btn" onClick={() => ir('fichas')}>Saltar y continuar</button>
-          </div>
-        </section>
-      )}
+      {fase === 'cine' && <Cine cap={cap} nombre={nombre} alSeguir={() => ir('fichas')} />}
 
       {fase === 'fichas' && (
         <section aria-label="Fichas del capítulo">
           <div className="guia">
             <CaraProfe pose={ficha === cap.fichas.length - 1 ? 'celebra' : 'explica'} size={72} />
-            <p className="burbuja"><b className="quien-habla">{NOMBRE_PROFE}</b>{ficha === 0 ? cap.dice : ficha === cap.fichas.length - 1 ? 'Última ficha. Después viene el minijuego.' : 'Léela con calma. Lo vas a necesitar.'}</p>
+            <p className="burbuja"><b className="quien-habla">{NOMBRE_PROFE}</b>{ficha === 0 ? conNombre(cap.dice) : ficha === cap.fichas.length - 1 ? 'Última ficha. Después viene el minijuego.' : 'Léela con calma. Lo vas a necesitar.'}</p>
           </div>
           <VistaFicha key={ficha} f={cap.fichas[ficha]} cap={cap} />
           <div className="nav-fichas">
@@ -180,7 +170,7 @@ export const Capitulo: React.FC<{
           </div>
           <div className="resumen">
             <img className="profe-res" src={fotoProfe('celebra')} alt={`${NOMBRE_PROFE} celebrando tu resultado`} width={150} height={200} />
-            <h2 id="t-res">{esFinal ? (aprobado ? '¡Eres analista certificado!' : 'Casi lo logras') : `¡Ganaste «${cap.insignia}»!`}</h2>
+            <h2 id="t-res">{esFinal ? (aprobado ? '¡Eres analista certificado!' : 'Casi lo logras') : `¡Ganaste «${cap.insignia}»${nombre ? `, ${nombre.split(' ')[0]}` : ''}!`}</h2>
             <p>{esFinal
               ? (aprobado ? `Resolviste el caso «${caso}». Imprime o guarda tu certificado.` : `Necesitas el 60 % para el certificado. Intenta con otro caso.`)
               : 'Mira cómo te fue y sigue con el próximo capítulo.'}</p>

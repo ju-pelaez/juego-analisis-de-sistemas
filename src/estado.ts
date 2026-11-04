@@ -107,5 +107,16 @@ export function sonar(tipo: Sonido) {
   }
 }
 
+// El juego llama a cada jugador por su nombre. Se guarda aquí para que cualquier pieza lo use.
+let nombreJugador = '';
+export const ponerNombre = (n: string) => { nombreJugador = n.trim().split(/\s+/)[0] || ''; };
+export const nombre = () => nombreJugador;
+// "Valentina, ahora miremos…" o "¡Hola, Valentina! ¡Bienvenidos…" según cómo empiece la frase.
+export function conNombre(frase: string, n = nombreJugador) {
+  if (!n) return frase;
+  if (/^[¡¿]/.test(frase)) return `¡Hola, ${n}! ${frase}`;
+  return `${n}, ${frase.charAt(0).toLowerCase()}${frase.slice(1)}`;
+}
+
 // Vibración corta en el celular (si el aparato la tiene).
 export const vibrar = (ms = 30) => { try { navigator.vibrate?.(ms); } catch { /* sin vibración */ } };

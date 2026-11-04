@@ -3,7 +3,7 @@
 // Con ?sala=CODIGO en la dirección se abre directo el celular de un jugador.
 import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { CAPITULOS } from './datos/capitulos';
-import { guardarProgreso, leerProgreso, ponerSonido, sonar, useVertical, type Progreso, type ResultadoCap } from './estado';
+import { guardarProgreso, leerProgreso, ponerNombre, ponerSonido, sonar, useVertical, type Progreso, type ResultadoCap } from './estado';
 import { Capitulo } from './Capitulo';
 import { Video } from './componentes/Video';
 import { Glifo } from './componentes/Glifo';
@@ -30,6 +30,7 @@ export const App: React.FC = () => {
   const vertical = useVertical();
 
   useEffect(() => { guardarProgreso(prog); ponerSonido(prog.sonido); }, [prog]);
+  ponerNombre(prog.nombre);
   useEffect(() => { document.documentElement.dataset.tema = prog.tema; }, [prog.tema]);
 
   const total = Object.values(prog.caps).reduce((s, r) => s + r.puntos, 0);

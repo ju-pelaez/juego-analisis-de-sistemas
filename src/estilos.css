@@ -477,3 +477,22 @@ a { color: var(--c-dat); }
 .carril-zona.encima { fill: color-mix(in srgb, var(--c-sis) 16%, transparent) !important; }
 .flecha-nueva path { animation: dibuja .5s ease-out; }
 @keyframes dibuja { from { opacity: 0; } }
+
+/* ---------- controles de la cinemática y notas al pausar ---------- */
+.cine-y-notas { display: grid; gap: 12px; grid-template-columns: 1fr; align-items: start; }
+.en-pausa .cine-y-notas { grid-template-columns: 1fr; }
+@media (min-width: 900px) { .en-pausa .cine-y-notas { grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr); } }
+.notas-pausa { background: var(--panel); border: 2px solid var(--c-sis); border-radius: var(--radio); padding: 16px; display: grid; gap: 10px; animation: entra-nota .25s ease-out; font-size: 17px; }
+.notas-pausa ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.notas-pausa .nota-fuerte { font-family: var(--f-titulo); font-weight: 800; font-size: 20px; }
+.notas-cabeza { display: flex; gap: 10px; align-items: center; }
+.notas-cabeza small { display: block; color: var(--tenue); font-size: 13px; }
+@keyframes entra-nota { from { opacity: 0; translate: 16px 0; } }
+.controles-cine { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.controles-cine .icono { font-size: 15px; font-weight: 800; width: 46px; height: 46px; }
+.controles-cine .play { min-height: 46px; padding: 8px 18px; }
+.linea-tiempo { flex: 1 1 160px; accent-color: var(--c-sis); height: 32px; min-width: 120px; }
+.controles-cine .tiempo { color: var(--tenue); font-size: 14px; font-variant-numeric: tabular-nums; }
+button.fase { background: none; border: 0; padding: 6px 2px; color: inherit; font: inherit; font-size: 13px; }
+button.fase:not([disabled]) { cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+button.fase[disabled] { cursor: default; }
