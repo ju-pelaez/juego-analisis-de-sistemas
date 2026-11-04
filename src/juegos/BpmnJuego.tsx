@@ -22,7 +22,7 @@ export const Simbolo: React.FC<{ s: Tipo | 'flujo'; x?: number; y?: number; text
     <g opacity={op}>
       <path d={`M${x} ${y - 36} L${x + 36} ${y} L${x} ${y + 36} L${x - 36} ${y} Z`} fill="color-mix(in srgb, var(--c-sis) 30%, var(--panel))" stroke={sel ? trazo : 'var(--c-sis)'} strokeWidth={sel ? 6 : 3} />
       <path d={`M${x - 12} ${y - 12} L${x + 12} ${y + 12} M${x + 12} ${y - 12} L${x - 12} ${y + 12}`} stroke="var(--tinta)" strokeWidth={4} strokeLinecap="round" />
-      {texto && <text x={x + 46} y={y + 6} className="bpmn-txt chico">{texto}</text>}
+      {texto && <text x={x} y={y - 46} textAnchor="middle" className="bpmn-txt chico">{texto}</text>}
     </g>
   );
   if (s === 'flujo') return <g opacity={op}><path d={`M${x - 34} ${y} L${x + 26} ${y}`} stroke="var(--tinta)" strokeWidth={4} /><path d={`M${x + 18} ${y - 9} L${x + 34} ${y} L${x + 18} ${y + 9} Z`} fill="var(--tinta)" /></g>;
