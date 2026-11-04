@@ -80,25 +80,88 @@ const Sistema: React.FC = () => {
 };
 
 // 2 · Entrada → proceso → salida, con el lazo de control que vuelve.
+// Punto de una curva cúbica (para que el pulso del control viaje por su camino).
+const bezier = (t: number, p: number[]) => {
+  const u = 1 - t;
+  return [0, 1].map((k) => u * u * u * p[k] + 3 * u * u * t * p[k + 2] + 3 * u * t * t * p[k + 4] + t * t * t * p[k + 6]);
+};
+// Engranaje de 10 dientes centrado en (cx, cy).
+const engranaje = (cx: number, cy: number, r1: number, r2: number) =>
+  Array.from({ length: 40 }, (_, k) => {
+    const a = (k / 40) * Math.PI * 2;
+    const r = k % 4 < 2 ? r1 : r2;
+    return `${k ? 'L' : 'M'}${(cx + Math.cos(a) * r).toFixed(1)} ${(cy + Math.sin(a) * r).toFixed(1)}`;
+  }).join(' ') + 'Z';
+
 const Modelo: React.FC = () => {
   const f = useCurrentFrame();
-  const cajas = [['ENTRADAS', 'dat', 60], ['PROCESOS', 'pro', 380], ['SALIDAS', 'efe', 700]] as const;
+  const estaciones = [
+    { n: 'ENTRADAS', c: 'dat', x: 180, ej: 'ingredientes · pedidos' },
+    { n: 'PROCESOS', c: 'pro', x: 500, ej: 'preparar · cobrar' },
+    { n: 'SALIDAS', c: 'efe', x: 820, ej: 'almuerzo · recibo' },
+  ] as const;
+  // El pulso del control: sale de las salidas, pasa por el control (mide) y vuelve al proceso (corrige).
+  const A = [840, 430, 840, 560, 720, 590, 630, 590];
+  const B = [370, 590, 250, 590, 250, 470, 440, 425];
+  const ciclo = (f - 60) % 60;
+  const t = f < 60 ? -1 : ciclo / 60;
+  const pulso = t < 0 ? null : t < 0.45 ? bezier(t / 0.45, A) : t < 0.55 ? [500, 590] : bezier((t - 0.55) / 0.45, B);
+  const corrige = f >= 60 && ciclo > 52 ? 1 : 0;
+  const midiendo = f >= 60 && t >= 0.4 && t < 0.6;
   return (
     <Lienzo>
-      {cajas.map(([n, c, x], i) => (
-        <g key={n} style={{ opacity: ap(f, i * 10, i * 10 + 15), translate: `0px ${(1 - ap(f, i * 10, i * 10 + 20)) * 40}px` }}>
-          <rect x={x} y={230} width={240} height={150} rx={24} style={{ fill: 'var(--panel)', stroke: col(c), strokeWidth: 6 }} />
-          <text x={x + 120} y={318} textAnchor="middle" style={txt(34)}>{n}</text>
+      <text x="500" y="62" textAnchor="middle" style={{ ...txt(26, 600), fill: 'var(--tenue)', opacity: ap(f, 0, 12) }}>LA MÁQUINA DE LA CAFETERÍA</text>
+      {estaciones.map((e, i) => (
+        <g key={e.n} style={{ opacity: ap(f, i * 8, i * 8 + 14), translate: `0px ${(1 - ap(f, i * 8, i * 8 + 20)) * 30}px` }}>
+          <rect x={e.x - 120} y={100} width={240} height={190} rx={26}
+            style={{ fill: 'var(--panel)', stroke: col(e.c), strokeWidth: i === 1 && corrige ? 10 : 6 }} />
+          {i === 0 && [0, 1, 2].map((k) => {
+            const caida = ((f + k * 14) % 42) / 42;
+            return <rect key={k} x={e.x - 14 + (k - 1) * 34} y={130 + caida * 40} width={26} height={26} rx={6} style={{ fill: col('dat'), opacity: 1 - caida * 0.6 }} />;
+          })}
+          {i === 1 && (
+            <path d={engranaje(e.x, 170, 40, 30)} style={{ fill: col('pro'), transformOrigin: `${e.x}px 170px`, rotate: `${f * 4}deg` }} />
+          )}
+          {i === 1 && <circle cx={e.x} cy={170} r={12} style={{ fill: 'var(--panel)' }} />}
+          {i === 2 && (
+            <g>
+              <ellipse cx={e.x} cy={192} rx={58} ry={12} style={{ fill: col('efe'), opacity: 0.85 }} />
+              <path d={`M${e.x - 40} 186 A40 40 0 0 1 ${e.x + 40} 186 Z`} style={{ fill: 'none', stroke: col('efe'), strokeWidth: 6 }} />
+              <circle cx={e.x} cy={140} r={6} style={{ fill: col('efe') }} />
+            </g>
+          )}
+          <text x={e.x} y={262} textAnchor="middle" style={txt(30)}>{e.n}</text>
+          <text x={e.x} y={330} textAnchor="middle" style={{ ...txt(22, 500), fill: 'var(--tenue)' }}>{e.ej}</text>
         </g>
       ))}
-      {[0, 1, 2, 3, 4, 5].map((i) => {
-        const x = ((f * 6 + i * 150) % 900) + 50;
-        return <circle key={i} cx={x} cy={305} r={10} style={{ fill: x < 380 ? col('dat') : x < 700 ? col('pro') : col('efe'), opacity: ap(f, 30, 40) * 0.9 }} />;
+      {/* banda transportadora: lo que entra, se transforma y sale */}
+      <g style={{ opacity: ap(f, 14, 28) }}>
+        <rect x={70} y={398} width={860} height={34} rx={17} style={{ fill: 'var(--panel2)', stroke: 'var(--linea-fuerte)', strokeWidth: 3 }} />
+        <line x1={90} y1={415} x2={910} y2={415} style={{ stroke: 'var(--linea-fuerte)', strokeWidth: 4, strokeDasharray: '14 18', strokeDashoffset: -f * 4 }} />
+        <rect x={380} y={392} width={240} height={46} rx={20} style={{ fill: col('pro'), opacity: 0.18 + 0.12 * Math.sin(f / 5) }} />
+      </g>
+      {Array.from({ length: 7 }, (_, k) => {
+        const x = 90 + ((f * 4 + k * 120) % 820);
+        const fase = x < 380 ? 0 : x < 620 ? 1 : 2;
+        const borde = Math.min(1, (x - 90) / 40, (910 - x) / 40);
+        const c = ['dat', 'pro', 'efe'][fase];
+        return fase === 2
+          ? <circle key={k} cx={x} cy={384} r={15} style={{ fill: col(c), opacity: ap(f, 24, 34) * borde }} />
+          : <rect key={k} x={x - 14} y={370} width={28} height={28} rx={fase ? 10 : 5}
+              style={{ fill: col(c), opacity: ap(f, 24, 34) * borde, transformOrigin: `${x}px 384px`, rotate: fase ? `${(x - 380) * 0.75}deg` : '0deg' }} />;
       })}
-      <path d="M820 400 C 820 560, 500 580, 500 400" pathLength={1}
-        style={{ fill: 'none', stroke: col('con'), strokeWidth: 10, strokeLinecap: 'round', strokeDasharray: 1, strokeDashoffset: 1 - ap(f, 45, 75) }} />
-      <path d="M480 425 L500 395 L522 425" style={{ fill: 'none', stroke: col('con'), strokeWidth: 10, strokeLinecap: 'round', opacity: ap(f, 72, 80) }} />
-      <text x="660" y="600" textAnchor="middle" style={{ ...txt(36), fill: col('con'), opacity: ap(f, 70, 85) }}>CONTROL ↺</text>
+      {/* control: mide la salida y retroalimenta el proceso */}
+      <g style={{ opacity: ap(f, 40, 56) }}>
+        <path d={`M${A[0]} ${A[1]} C${A[2]} ${A[3]}, ${A[4]} ${A[5]}, ${A[6]} ${A[7]}`} style={{ fill: 'none', stroke: col('con'), strokeWidth: 6, strokeDasharray: '10 10', strokeDashoffset: f * 2 }} />
+        <path d={`M${B[0]} ${B[1]} C${B[2]} ${B[3]}, ${B[4]} ${B[5]}, ${B[6]} ${B[7]}`} style={{ fill: 'none', stroke: col('con'), strokeWidth: 6, strokeDasharray: '10 10', strokeDashoffset: f * 2 }} />
+        <path d="M424 418 L444 424 L432 442" style={{ fill: 'none', stroke: col('con'), strokeWidth: 6, strokeLinecap: 'round', strokeLinejoin: 'round' }} />
+        <rect x={370} y={555} width={260} height={74} rx={37} style={{ fill: col('con') }} />
+        <text x={500} y={603} textAnchor="middle" style={{ ...txt(30), fill: 'var(--fondo)' }}>CONTROL</text>
+        <text x={790} y={612} textAnchor="middle" style={{ ...txt(22, 600), fill: col('con'), opacity: midiendo ? 1 : 0.7 }}>mide la salida</text>
+        <text x={190} y={612} textAnchor="middle" style={{ ...txt(22, 600), fill: col('con'), opacity: corrige ? 1 : 0.7 }}>corrige el proceso</text>
+      </g>
+      {pulso && <circle cx={pulso[0]} cy={pulso[1]} r={midiendo ? 16 : 11} style={{ fill: col('sis') }} />}
+      {corrige > 0 && <text x={500} y={88} textAnchor="middle" style={{ ...txt(24), fill: col('pro') }}>¡ajuste!</text>}
     </Lienzo>
   );
 };
