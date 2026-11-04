@@ -4,7 +4,7 @@
 //   2. La animación del concepto.
 //   3. La frase clave (lema), palabra por palabra.
 import React from 'react';
-import { AbsoluteFill, Img, interpolate, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Audio, Img, interpolate, Sequence, useCurrentFrame } from 'remotion';
 import { linearTiming, springTiming, TransitionSeries } from '@remotion/transitions';
 import { fade } from '@remotion/transitions/fade';
 import { slide } from '@remotion/transitions/slide';
@@ -14,12 +14,24 @@ import { fotoProfe, NOMBRE_PROFE } from '../componentes/Profe';
 
 export type CinematicaProps = {
   id: string; n: number; titulo: string; sub: string; lema: string; dice: string; color: string;
+  // Voz de la profe (opcional) y largo de las escenas 2 y 3 para que la voz quepa.
+  vozDice?: string; vozLema?: string; e2?: number; e3?: number;
 };
 
 const ESCENA1 = 80, ESCENA2 = 130, ESCENA3 = 75, T1 = 18, T2 = 15;
 export const DURACION_CINE = ESCENA1 + ESCENA2 + ESCENA3 - T1 - T2;
+const VOZ_DESDE = 12; // la profe empieza a hablar en este cuadro
+
+// Tiempos de la cinemática según lo que dura la voz: la frase de la profe suena en las escenas 1 y 2,
+// y el lema en la escena 3. Si no hay voz, quedan los tiempos de siempre.
+export function tiemposCine(diceMs = 0, lemaMs = 0) {
+  const dice = Math.ceil((diceMs / 1000) * 30), lema = Math.ceil((lemaMs / 1000) * 30);
+  const e2 = Math.max(ESCENA2, VOZ_DESDE + dice + 12 - (ESCENA1 - T1) + T2);
+  const e3 = Math.max(ESCENA3, lema + 30);
+  return { e2, e3, total: ESCENA1 + e2 + e3 - T1 - T2, escenas: [0, ESCENA1 - T1, ESCENA1 - T1 + e2 - T2] };
+}
 // Cuadro en que empieza cada escena (las transiciones se montan sobre la escena anterior).
-export const ESCENAS = [0, ESCENA1 - T1, ESCENA1 - T1 + ESCENA2 - T2];
+export const ESCENAS = tiemposCine().escenas;
 
 const Portadilla: React.FC<CinematicaProps> = ({ n, titulo, sub, dice, color }) => {
   const f = useCurrentFrame();
@@ -100,19 +112,23 @@ const Lema: React.FC<CinematicaProps> = ({ lema, color }) => {
 };
 
 export const Cinematica: React.FC<CinematicaProps> = (props) => (
+  <>
+  {props.vozDice && <Sequence from={VOZ_DESDE} layout="none"><Audio src={props.vozDice} /></Sequence>}
+  {props.vozLema && <Sequence from={tiemposCine().escenas[2] + (props.e2 ?? ESCENA2) - ESCENA2 + 10} layout="none"><Audio src={props.vozLema} /></Sequence>}
   <TransitionSeries>
     <TransitionSeries.Sequence durationInFrames={ESCENA1}>
       <Portadilla {...props} />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={slide({ direction: 'from-right' })} timing={springTiming({ config: { damping: 200 }, durationInFrames: T1 })} />
-    <TransitionSeries.Sequence durationInFrames={ESCENA2}>
+    <TransitionSeries.Sequence durationInFrames={props.e2 ?? ESCENA2}>
       <EscenaConcepto {...props} />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: T2 })} />
-    <TransitionSeries.Sequence durationInFrames={ESCENA3}>
+    <TransitionSeries.Sequence durationInFrames={props.e3 ?? ESCENA3}>
       <Lema {...props} />
     </TransitionSeries.Sequence>
   </TransitionSeries>
+  </>
 );
 
 // La misma animación del concepto, sola y en bucle, para la primera ficha del capítulo.

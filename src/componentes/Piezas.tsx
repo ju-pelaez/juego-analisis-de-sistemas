@@ -4,6 +4,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CaraProfe } from './Profe';
 import { nombre } from '../estado';
+import { animo } from '../voz';
 
 export type AvisoDato = { ok: boolean; texto: string; por?: string } | null;
 
@@ -17,6 +18,7 @@ export const Aviso: React.FC<{ aviso: AvisoDato; vacio?: string }> = ({ aviso, v
   useEffect(() => {
     if (!aviso) return;
     racha = aviso.ok ? racha + 1 : 0;
+    animo(aviso.ok);
     setR(racha);
   }, [aviso]);
   return (

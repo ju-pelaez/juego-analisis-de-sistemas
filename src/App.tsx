@@ -5,6 +5,7 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { CAPITULOS } from './datos/capitulos';
 import { guardarProgreso, leerProgreso, ponerNombre, ponerSonido, sonar, useVertical, type Progreso, type ResultadoCap } from './estado';
 import { Capitulo } from './Capitulo';
+import { callar, cargarVoz } from './voz';
 import { Video } from './componentes/Video';
 import { Glifo } from './componentes/Glifo';
 import { Estrellas } from './componentes/Piezas';
@@ -31,12 +32,14 @@ export const App: React.FC = () => {
 
   useEffect(() => { guardarProgreso(prog); ponerSonido(prog.sonido); }, [prog]);
   ponerNombre(prog.nombre);
+  useEffect(() => { cargarVoz(); }, []);
+  useEffect(() => { if (!prog.sonido) callar(); }, [prog.sonido]);
   useEffect(() => { document.documentElement.dataset.tema = prog.tema; }, [prog.tema]);
 
   const total = Object.values(prog.caps).reduce((s, r) => s + r.puntos, 0);
   const hechos = CAPITULOS.filter((c) => prog.caps[c.id]).length;
   const abierto = (k: number) => prog.abiertoTodo || k === 0 || !!prog.caps[CAPITULOS[k - 1].id];
-  const ir = (v: Vista) => { setVista(v); window.scrollTo({ top: 0 }); };
+  const ir = (v: Vista) => { callar(); setVista(v); window.scrollTo({ top: 0 }); };
 
   const guardar = (id: string, r: ResultadoCap) =>
     setProg((p) => {

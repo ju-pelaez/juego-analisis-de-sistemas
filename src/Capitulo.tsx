@@ -1,7 +1,8 @@
 // Capitulo.tsx
 // Un capítulo de principio a fin: cinemática → fichas → minijuego → preguntas → insignia.
 // El reto final cambia las dos últimas fases por el resultado y el certificado.
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { alCambiarVoz, callar, cargarVoz, hablar, hayVoz } from './voz';
 import type { Capitulo as Cap, Ficha } from './datos/capitulos';
 import { conNombre, estrellasDe, sonar, type ResultadoCap } from './estado';
 import { Video } from './componentes/Video';
@@ -77,11 +78,23 @@ export const Capitulo: React.FC<{
   // Fases ya vistas: se puede volver a ellas (atrás) y regresar (adelante) desde la barra de fases.
   const [vistas, setVistas] = useState<Fase[]>(['cine']);
   const ir = (f: Fase) => { setFase(f); setVistas((v) => (v.includes(f) ? v : [...v, f])); window.scrollTo({ top: 0 }); };
+  // La profe lee cada ficha en voz alta (la primera empieza con su saludo).
+  const [hablando, setHablando] = useState(false);
+  useEffect(() => alCambiarVoz(setHablando), []);
+  const leerFicha = (k = ficha) => hablar(k === 0 ? [`${cap.id}-dice`, `${cap.id}-f0`] : [`${cap.id}-f${k}`]);
+  useEffect(() => {
+    if (fase !== 'fichas') return;
+    cargarVoz().then(() => leerFicha(ficha));
+    return () => callar();
+  }, [fase, ficha]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => callar(), []);
+
   const terminar = (a: number, t: number) => {
     const r: ResultadoCap = { aciertos: a, total: t, estrellas: estrellasDe(a, t), puntos: a * 10 + (estrellasDe(a, t) === 3 ? 20 : 0) };
     setResultado(r);
     alGuardar(r);
     sonar('logro');
+    setTimeout(() => hablar(esFinal && a / t >= 0.6 ? 'certificado' : 'insignia'), 900);
     ir('fin');
   };
   const finJuego = (a: number, t: number) => {
@@ -137,7 +150,12 @@ export const Capitulo: React.FC<{
       {fase === 'fichas' && (
         <section aria-label="Fichas del capítulo">
           <div className="guia">
-            <CaraProfe pose={ficha === cap.fichas.length - 1 ? 'celebra' : 'explica'} size={72} />
+            <CaraProfe pose={ficha === cap.fichas.length - 1 ? 'celebra' : 'explica'} size={72} className={hablando ? 'hablando' : ''} />
+            {hayVoz(`${cap.id}-f${ficha}`) && (
+              <button className="icono oir" onClick={() => (hablando ? callar() : leerFicha())} aria-label={hablando ? 'Callar a la profe' : 'Oír a la profe'} title={hablando ? 'Callar' : 'Oír a la profe'}>
+                {hablando ? '■' : '🔊'}
+              </button>
+            )}
             <p className="burbuja"><b className="quien-habla">{NOMBRE_PROFE}</b>{ficha === 0 ? conNombre(cap.dice) : ficha === cap.fichas.length - 1 ? 'Última ficha. Después viene el minijuego.' : 'Léela con calma. Lo vas a necesitar.'}</p>
           </div>
           <VistaFicha key={ficha} f={cap.fichas[ficha]} cap={cap} />

@@ -496,3 +496,6 @@ a { color: var(--c-dat); }
 button.fase { background: none; border: 0; padding: 6px 2px; color: inherit; font: inherit; font-size: 13px; }
 button.fase:not([disabled]) { cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 button.fase[disabled] { cursor: default; }
+.guia .oir { align-self: center; }
+.cara-profe.hablando { box-shadow: 0 0 0 4px color-mix(in srgb, var(--c-sis) 45%, transparent); animation: habla 1.1s ease-in-out infinite; }
+@keyframes habla { 50% { box-shadow: 0 0 0 9px color-mix(in srgb, var(--c-sis) 15%, transparent); } }

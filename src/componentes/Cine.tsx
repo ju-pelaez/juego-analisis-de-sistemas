@@ -5,10 +5,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { PlayerRef } from '@remotion/player';
 import type { Capitulo } from '../datos/capitulos';
-import { conNombre, useMenosMovimiento, useVertical } from '../estado';
+import { conNombre, sonidoPrendido, useMenosMovimiento, useVertical } from '../estado';
+import { cargarVoz, hayVoz, msVoz, srcVoz } from '../voz';
 import { Video } from './Video';
 import { CaraProfe, NOMBRE_PROFE } from './Profe';
-import { Cinematica, DURACION_CINE, ESCENAS } from '../remotion/Cinematica';
+import { Cinematica, tiemposCine } from '../remotion/Cinematica';
 
 const NOMBRES_ESCENA = ['Presentación', 'El concepto', 'La idea clave'];
 
@@ -19,7 +20,15 @@ export const Cine: React.FC<{ cap: Capitulo; nombre: string; alSeguir: () => voi
   const [andando, setAndando] = useState(!menos);
   const [cuadro, setCuadro] = useState(0);
   const [termino, setTermino] = useState(false);
+  // Se espera a saber qué frases de la profe existen: de eso depende el largo de las escenas.
+  const [vozLista, setVozLista] = useState(false);
+  useEffect(() => { cargarVoz().then(() => setVozLista(true)); }, []);
+  const conVoz = vozLista && sonidoPrendido();
+  const kDice = `${cap.id}-dice`, kLema = `${cap.id}-lema`;
+  const t = tiemposCine(conVoz && hayVoz(kDice) ? msVoz(kDice) : 0, conVoz && hayVoz(kLema) ? msVoz(kLema) : 0);
+  const DURACION_CINE = t.total, ESCENAS = t.escenas;
   const props = {
+    vozDice: conVoz && hayVoz(kDice) ? srcVoz(kDice) : '', vozLema: conVoz && hayVoz(kLema) ? srcVoz(kLema) : '', e2: t.e2, e3: t.e3,
     id: cap.id, n: cap.n, titulo: cap.titulo, sub: cap.sub, lema: cap.lema, color: cap.color,
     dice: conNombre(cap.dice, nombre.trim().split(/\s+/)[0]),
   };
@@ -42,7 +51,7 @@ export const Cine: React.FC<{ cap: Capitulo; nombre: string; alSeguir: () => voi
       p.removeEventListener('ended', fin);
       p.removeEventListener('frameupdate', cuadroNuevo);
     };
-  }, [vertical]);
+  }, [vertical, vozLista]);
 
   const escena = ESCENAS.reduce((k, inicio, i) => (cuadro >= inicio ? i : k), 0);
   const ir = (f: number) => {
@@ -84,9 +93,9 @@ export const Cine: React.FC<{ cap: Capitulo; nombre: string; alSeguir: () => voi
     <section className={'zona-cine' + (!andando ? ' en-pausa' : '')} aria-label="Cinemática de entrada">
       <div className="cine-y-notas">
         <div className="marco-video">
-          <Video ref={player} key={vertical ? 'v' : 'h'} componente={Cinematica} props={props} duracion={DURACION_CINE}
+          {vozLista && <Video ref={player} key={vertical ? 'v' : 'h'} componente={Cinematica} props={props} duracion={DURACION_CINE}
             ancho={vertical ? 720 : 1280} alto={vertical ? 1040 : 720}
-            etiqueta={`Cinemática del capítulo ${cap.n}: ${cap.titulo}. ${props.dice} ${cap.lema}`} />
+            etiqueta={`Cinemática del capítulo ${cap.n}: ${cap.titulo}. ${props.dice} ${cap.lema}`} />}
         </div>
         {!andando && (
           <aside className="notas-pausa" aria-live="polite">

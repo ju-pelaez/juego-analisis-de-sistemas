@@ -74,6 +74,7 @@ export function useVertical() {
 let ctx: AudioContext | null = null;
 let sonidoActivo = true;
 export const ponerSonido = (v: boolean) => { sonidoActivo = v; };
+export const sonidoPrendido = () => sonidoActivo;
 type Sonido = 'bien' | 'mal' | 'tic' | 'logro' | 'pop' | 'entra';
 export function sonar(tipo: Sonido) {
   if (!sonidoActivo) return;
