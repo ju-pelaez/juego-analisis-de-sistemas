@@ -1,16 +1,16 @@
 // Cinematica.tsx
 // La cinemática de entrada de cada capítulo, en tres escenas unidas con transiciones:
-//   1. Número y título del capítulo, con Alex (el estudiante guía) diciendo de qué se trata.
+//   1. Número y título del capítulo, con la profe Ruth Dary diciendo de qué se trata.
 //   2. La animación del concepto.
 //   3. La frase clave (lema), palabra por palabra.
 import React from 'react';
-import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Img, interpolate, useCurrentFrame } from 'remotion';
 import { linearTiming, springTiming, TransitionSeries } from '@remotion/transitions';
 import { fade } from '@remotion/transitions/fade';
 import { slide } from '@remotion/transitions/slide';
 import { ap, col, Fondo, resorte, useMedida } from './comun';
 import { Concepto } from './Conceptos';
-import { Estudiante } from '../componentes/Estudiante';
+import { fotoProfe, NOMBRE_PROFE } from '../componentes/Profe';
 
 export type CinematicaProps = {
   id: string; n: number; titulo: string; sub: string; lema: string; dice: string; color: string;
@@ -49,8 +49,17 @@ const Portadilla: React.FC<CinematicaProps> = ({ n, titulo, sub, dice, color }) 
           }}>
             {dice}
           </div>
-          <div style={{ translate: `0px ${(1 - resorte(f, 20, 30)) * u(30)}px`, flexShrink: 0 }}>
-            <Estudiante f={f} gesto="normal" size={u(vertical ? 26 : 30)} />
+          <div style={{ translate: `0px ${(1 - resorte(f, 16, 30)) * u(40)}px`, flexShrink: 0, textAlign: 'center' }}>
+            <Img src={fotoProfe('explica')} style={{
+              height: u(vertical ? 40 : 52), display: 'block', margin: '0 auto',
+              translate: `0px ${Math.sin(f / 14) * u(0.5)}px`, rotate: `${Math.sin(f / 22) * 1.2}deg`,
+              filter: `drop-shadow(0 ${u(1)}px ${u(2)}px rgba(0,0,0,.45))`,
+            }} />
+            <div style={{
+              fontFamily: 'var(--f-titulo)', fontWeight: 800, fontSize: u(3), color: 'var(--fondo)', background: col(color),
+              borderRadius: u(2), padding: `${u(0.6)}px ${u(2)}px`, marginTop: -u(2), position: 'relative', display: 'inline-block',
+              opacity: ap(f, 30, 40),
+            }}>{NOMBRE_PROFE}</div>
           </div>
         </div>
       </AbsoluteFill>

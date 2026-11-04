@@ -6,7 +6,7 @@ import type { Capitulo as Cap, Ficha } from './datos/capitulos';
 import { estrellasDe, sonar, useVertical, type ResultadoCap } from './estado';
 import { Video } from './componentes/Video';
 import { Glifo } from './componentes/Glifo';
-import { Estudiante } from './componentes/Estudiante';
+import { CaraProfe, fotoProfe, NOMBRE_PROFE } from './componentes/Profe';
 import { Preguntas } from './componentes/Preguntas';
 import { Estrellas } from './componentes/Piezas';
 import { Cinematica, ConceptoBucle, DURACION_CINE } from './remotion/Cinematica';
@@ -22,6 +22,7 @@ import { ArbolJuego } from './juegos/ArbolJuego';
 import { Lupa } from './juegos/Lupa';
 import { Cubetas } from './juegos/Cubetas';
 import { RetoFinal } from './juegos/RetoFinal';
+import { BpmnJuego } from './juegos/BpmnJuego';
 
 type Fase = 'cine' | 'fichas' | 'juego' | 'preguntas' | 'fin';
 const FASES: { id: Fase; n: string }[] = [
@@ -100,6 +101,7 @@ export const Capitulo: React.FC<{
       case 'arbol': return <ArbolJuego juego={j} alTerminar={finJuego} />;
       case 'lupa': return <Lupa juego={j} alTerminar={finJuego} />;
       case 'cubetas': return <Cubetas juego={j} alTerminar={finJuego} />;
+      case 'bpmn': return <BpmnJuego juego={j} alTerminar={finJuego} />;
       case 'final': return <RetoFinal alTerminar={(a, t, c) => { setCaso(c); finJuego(a, t); }} />;
     }
   };
@@ -110,7 +112,11 @@ export const Capitulo: React.FC<{
   const fecha = new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <div>
+    <div className="mundo" style={{ ['--mundo' as string]: `var(--c-${cap.color})` }}>
+      {/* El mundo del capítulo: su color y su glifo flotando al fondo. */}
+      <div className="mundo-fondo" aria-hidden="true">
+        {[0, 1, 2, 3, 4, 5].map((k) => <span key={k} className={'flota f' + k}><Glifo id={cap.id} size={90 + (k % 3) * 40} /></span>)}
+      </div>
       <nav className="fases" aria-label="Fases del capítulo">
         {fases.map((f, k) => (
           <div key={f.id} className={'fase' + (k < iFase ? ' hecha' : k === iFase ? ' actual' : '')} aria-current={k === iFase ? 'step' : undefined}>
@@ -141,8 +147,8 @@ export const Capitulo: React.FC<{
       {fase === 'fichas' && (
         <section aria-label="Fichas del capítulo">
           <div className="guia">
-            <Estudiante gesto={ficha === 0 ? 'normal' : ficha === cap.fichas.length - 1 ? 'celebra' : 'piensa'} size={64} titulo="Alex, el estudiante guía" />
-            <p className="burbuja">{ficha === 0 ? (nombre ? `${nombre}, ` : '') + cap.dice : ficha === cap.fichas.length - 1 ? 'Última ficha. Después viene el minijuego.' : 'Léela con calma. Lo vas a necesitar.'}</p>
+            <CaraProfe pose={ficha === cap.fichas.length - 1 ? 'celebra' : 'explica'} size={72} />
+            <p className="burbuja"><b className="quien-habla">{NOMBRE_PROFE}</b>{ficha === 0 ? (nombre ? `${nombre}, ` : '') + cap.dice : ficha === cap.fichas.length - 1 ? 'Última ficha. Después viene el minijuego.' : 'Léela con calma. Lo vas a necesitar.'}</p>
           </div>
           <VistaFicha key={ficha} f={cap.fichas[ficha]} cap={cap} />
           <div className="nav-fichas">
@@ -173,6 +179,7 @@ export const Capitulo: React.FC<{
             )}
           </div>
           <div className="resumen">
+            <img className="profe-res" src={fotoProfe('celebra')} alt={`${NOMBRE_PROFE} celebrando tu resultado`} width={150} height={200} />
             <h2 id="t-res">{esFinal ? (aprobado ? '¡Eres analista certificado!' : 'Casi lo logras') : `¡Ganaste «${cap.insignia}»!`}</h2>
             <p>{esFinal
               ? (aprobado ? `Resolviste el caso «${caso}». Imprime o guarda tu certificado.` : `Necesitas el 60 % para el certificado. Intenta con otro caso.`)

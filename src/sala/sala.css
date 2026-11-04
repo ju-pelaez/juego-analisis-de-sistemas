@@ -146,3 +146,4 @@
 .escribir { display: flex; gap: 8px; }
 .escribir input { flex: 1; min-width: 0; min-height: 48px; border-radius: 12px; border: 2px solid var(--linea-fuerte); background: var(--fondo2); padding: 8px 12px; }
 .escribir .btn { min-height: 48px; padding: 8px 14px; }
+.lobby-lado select { min-height: 50px; border-radius: 12px; border: 2px solid var(--linea-fuerte); background: var(--fondo2); padding: 8px 12px; font: inherit; color: var(--tinta); }

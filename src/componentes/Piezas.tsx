@@ -1,24 +1,40 @@
 // Piezas.tsx
 // Piezas pequeñas que usan todos los minijuegos: el aviso con el porqué, las estrellas,
 // la barra de avance y la carta que se arrastra con el dedo (o con el mouse) hasta una zona.
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { CaraProfe } from './Profe';
 
 export type AvisoDato = { ok: boolean; texto: string; por?: string } | null;
 
-// Aviso de retroalimentación: siempre dice si estuvo bien o mal y por qué. Se anuncia en voz alta
-// a los lectores de pantalla (aria-live).
-export const Aviso: React.FC<{ aviso: AvisoDato; vacio?: string }> = ({ aviso, vacio = 'Toca o arrastra para responder.' }) => (
-  <div className={'aviso ' + (aviso ? (aviso.ok ? 'bien' : 'mal') : 'vacio')} aria-live="polite" role="status">
-    {aviso ? (
-      <>
-        <span className="marca-aviso">{aviso.ok ? '✓ ¡Bien!' : '✗ Ojo'}</span>
-        <span><b>{aviso.texto}</b>{aviso.por ? <> {aviso.por}</> : null}</span>
-      </>
-    ) : (
-      <span>{vacio}</span>
-    )}
-  </div>
-);
+// Racha: aciertos seguidos en todo el juego. Es un gancho: verla crecer anima a seguir.
+let racha = 0;
+
+// Aviso de retroalimentación: siempre dice si estuvo bien o mal y por qué, con la profe al lado.
+// Se anuncia en voz alta a los lectores de pantalla (aria-live).
+export const Aviso: React.FC<{ aviso: AvisoDato; vacio?: string }> = ({ aviso, vacio = 'Toca o arrastra para responder.' }) => {
+  const [r, setR] = useState(racha);
+  useEffect(() => {
+    if (!aviso) return;
+    racha = aviso.ok ? racha + 1 : 0;
+    setR(racha);
+  }, [aviso]);
+  return (
+    <div key={aviso ? aviso.texto + aviso.ok : 'vacio'} className={'aviso ' + (aviso ? (aviso.ok ? 'bien salta' : 'mal tiembla') : 'vacio')} aria-live="polite" role="status">
+      {aviso ? (
+        <>
+          <CaraProfe pose={aviso.ok ? 'celebra' : 'explica'} size={44} />
+          <span>
+            <span className="marca-aviso">{aviso.ok ? '✓ ¡Bien!' : '✗ Ojo'}</span>{' '}
+            <b>{aviso.texto}</b>{aviso.por ? <> {aviso.por}</> : null}
+          </span>
+          {aviso.ok && r >= 2 && <span className="racha" aria-label={`Racha de ${r} aciertos`}>🔥 x{r}</span>}
+        </>
+      ) : (
+        <span>{vacio}</span>
+      )}
+    </div>
+  );
+};
 
 export const Estrellas: React.FC<{ n: number; total?: number }> = ({ n, total = 3 }) => (
   <span className="estrellas" role="img" aria-label={`${n} de ${total} estrellas`}>

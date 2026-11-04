@@ -88,7 +88,7 @@ export const App: React.FC = () => {
           </div>
           <div className="tarjeta">
             <h1>Aprende Análisis de Sistemas jugando</h1>
-            <p className="lead">11 capítulos con la clase completa: el sistema, sus componentes, el árbol de problemas, el entorno y la factibilidad. Cada capítulo trae una cinemática, fichas cortas, un minijuego distinto y su insignia.</p>
+            <p className="lead">12 capítulos con la clase completa: el sistema, sus componentes, los procesos en BPMN (como en Bizagi), el árbol de problemas, el entorno y la factibilidad. Cada capítulo trae una cinemática, fichas cortas, un minijuego distinto y su insignia.</p>
             <form onSubmit={(e) => {
               e.preventDefault();
               const nombre = String(new FormData(e.currentTarget).get('nombre') || '').trim().slice(0, 30);

@@ -34,6 +34,16 @@ function VideoBase<P extends Record<string, unknown>>(
     return () => p.removeEventListener('ended', fin);
   }, [alTerminar]);
 
+  // Si el navegador no deja arrancar el video solo, se muestra su último cuadro (nunca queda vacío).
+  useEffect(() => {
+    if (!auto || menos || bucle) return;
+    const t = setTimeout(() => {
+      const p = player.current;
+      if (p && !p.isPlaying() && p.getCurrentFrame() === 0) p.seekTo(duracion - 1);
+    }, 900);
+    return () => clearTimeout(t);
+  }, [auto, menos, bucle, duracion]);
+
   return (
     <div role="img" aria-label={etiqueta}>
       <Player

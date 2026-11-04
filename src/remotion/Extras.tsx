@@ -2,9 +2,9 @@
 // Otras composiciones de Remotion: la portada, la máquina del capítulo 2 (que se llena con los
 // aciertos), la insignia que se gana al terminar un capítulo y el certificado final.
 import React from 'react';
-import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Img, interpolate, useCurrentFrame } from 'remotion';
 import { ap, col, Fondo, resorte, useMedida } from './comun';
-import { Estudiante } from '../componentes/Estudiante';
+import { fotoProfe } from '../componentes/Profe';
 import { Glifo } from '../componentes/Glifo';
 
 // ---------------------------------------------------------------- portada (en bucle)
@@ -32,9 +32,13 @@ export const Portada: React.FC = () => {
             }}>{palabra}</span>
           </div>
         </div>
-        <div style={{ position: 'relative', flexShrink: 0 }}>
-          <div style={{ position: 'absolute', inset: -u(4), borderRadius: '50%', border: `${u(0.5)}px dashed ${col(c)}`, rotate: `${f * 0.8}deg` }} />
-          <Estudiante f={f} gesto={i === 3 ? 'celebra' : 'normal'} size={u(vertical ? 30 : 34)} />
+        <div style={{ position: 'relative', flexShrink: 0, width: u(vertical ? 48 : 56), height: u(vertical ? 48 : 56) }}>
+          <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: `${u(0.6)}px dashed ${col(c)}`, rotate: `${f * 0.8}deg` }} />
+          <div style={{ position: 'absolute', inset: u(2), borderRadius: '50%', background: `radial-gradient(circle at 50% 35%, ${col(c)} 0%, transparent 70%)`, opacity: 0.35 }} />
+          <Img src={fotoProfe(i === 3 ? 'celebra' : 'explica')} style={{
+            position: 'absolute', left: '50%', bottom: 0, height: '112%', translate: `-50% ${Math.sin(f / 16) * u(0.4)}px`,
+            filter: `drop-shadow(0 ${u(1)}px ${u(2)}px rgba(0,0,0,.4))`,
+          }} />
         </div>
       </AbsoluteFill>
     </Fondo>

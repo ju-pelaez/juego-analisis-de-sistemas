@@ -51,6 +51,15 @@ const T: Record<string, React.ReactNode> = {
       <path d="M13 24h6M29 24h6" strokeWidth="3" />
     </>
   ),
+  bpmn: (
+    <>
+      <circle cx="8" cy="10" r="5" fill="none" strokeWidth="3" />
+      <rect x="18" y="4" width="20" height="12" rx="3" fill="none" strokeWidth="3" />
+      <path d="M28 26l8 8-8 8-8-8z" fill="none" strokeWidth="3" strokeLinejoin="round" />
+      <circle cx="8" cy="38" r="5" fill="none" strokeWidth="5" />
+      <path d="M13 10h5M28 16v10M20 34H13" fill="none" strokeWidth="2.5" />
+    </>
+  ),
   control: (
     <>
       <path d="M38 17A16 16 0 1 0 40 28" fill="none" strokeWidth="3.5" strokeLinecap="round" />

@@ -42,6 +42,7 @@ export type Juego =
     }
   | { tipo: 'lupa'; titulo: string; pista: string; items: { t: string; sel: boolean; por: string }[] }
   | { tipo: 'cubetas'; titulo: string; cubetas: { id: string; n: string; c: Comp }[]; items: { t: string; b: string; por: string }[] }
+  | { tipo: 'bpmn'; titulo: string }
   | { tipo: 'final' };
 
 export type Capitulo = {
@@ -53,7 +54,7 @@ export type Capitulo = {
   color: Comp;
   caso: string;       // el ejemplo con el que se practica
   insignia: string;   // nombre de la insignia que se gana
-  dice: string;       // lo que dice Alex, el estudiante guía, al entrar al capítulo
+  dice: string;       // lo que dice la profe Ruth Dary al entrar al capítulo
   fichas: Ficha[];
   juego: Juego;
   preguntas: Pregunta[];
@@ -65,7 +66,7 @@ export const CAPITULOS: Capitulo[] = [
     titulo: 'Qué hace un analista', sub: 'Entender el problema antes de la solución',
     lema: 'Primero se entiende el problema. La solución viene después.',
     insignia: 'Lente de analista',
-    dice: '¡Hola! Soy Alex, estudiante de Análisis de Sistemas. Vamos a aprender la clase juntos, capítulo por capítulo.',
+    dice: '¡Bienvenidos a Análisis de Sistemas! Aquí aprendemos a entender el problema antes de pensar en la solución.',
     fichas: [
       {
         titulo: 'El analista mira antes de construir', concepto: true,
@@ -396,7 +397,55 @@ export const CAPITULOS: Capitulo[] = [
   },
 
   {
-    id: 'control', n: 6, color: 'con', caso: 'Transporte urbano',
+    id: 'bpmn', n: 6, color: 'efe', caso: 'Préstamo de un libro en la biblioteca',
+    titulo: 'Modela el proceso', sub: 'Diagramas BPMN, como en Bizagi',
+    lema: 'Un buen diagrama muestra quién hace qué, en qué orden y qué se decide.',
+    insignia: 'Modelador de procesos',
+    dice: 'Ahora dibujamos el proceso, como lo hacemos en Bizagi: cada símbolo tiene un significado.',
+    fichas: [
+      {
+        titulo: 'Modelar = dibujar el proceso', concepto: true,
+        texto: 'Bizagi Modeler es una herramienta para dibujar procesos con la notación BPMN. Con el diagrama, el analista muestra quién hace cada tarea, en qué orden y qué decisiones hay.',
+        frase: 'Si lo puedes dibujar, lo entendiste.',
+      },
+      {
+        titulo: 'Los símbolos básicos de BPMN',
+        filas: [
+          ['Evento de inicio', 'Círculo de borde delgado: dónde empieza el proceso.', 'efe'],
+          ['Tarea', 'Rectángulo redondeado: una actividad que alguien hace.', 'pro'],
+          ['Compuerta exclusiva', 'Rombo con una X: una decisión; se sigue por un solo camino.', 'sis'],
+          ['Evento de fin', 'Círculo de borde grueso: dónde termina el proceso.', 'act'],
+          ['Flujo de secuencia', 'Flecha: el orden en que pasan las cosas.', 'dat'],
+        ],
+      },
+      {
+        titulo: 'Carriles: cada actor tiene su franja',
+        texto: 'El proceso completo va dentro de un pool (la piscina). El pool se divide en carriles: un carril por cada actor o rol. Cada tarea se dibuja en el carril de quien la hace.',
+        dos: {
+          si: ['Carril Estudiante', 'Pedir el libro · Hacer una reserva'],
+          no: ['Carril Bibliotecario', 'Buscar el libro · Prestar el libro'],
+        },
+      },
+      {
+        titulo: 'Así se conecta con lo que ya sabes',
+        filas: [
+          ['Carriles', 'Son los actores: ¿quién participa?', 'act'],
+          ['Tareas', 'Son los procesos: ¿qué se hace?', 'pro'],
+          ['Compuertas', 'Son las decisiones: el camino cambia según una condición.', 'sis'],
+          ['Flechas', 'Son el orden: el flujo de entrada a salida.', 'dat'],
+        ],
+      },
+    ],
+    juego: { tipo: 'bpmn', titulo: 'Modela el préstamo de un libro' },
+    preguntas: [
+      { q: 'En un diagrama BPMN, ¿qué representa un carril?', ok: 'El actor o rol que hace esas tareas', mal: ['Un dato del sistema', 'El orden de las tareas', 'Una decisión'], por: 'Cada tarea va en el carril de quien la hace.' },
+      { q: '¿Qué símbolo se usa para una decisión?', ok: 'La compuerta exclusiva: un rombo con una X', mal: ['Un círculo delgado', 'Un rectángulo redondeado', 'Una flecha'], por: 'Desde la compuerta se sigue por un solo camino, según la condición.' },
+      { q: '¿Qué muestra el flujo de secuencia (la flecha)?', ok: 'El orden en que se hacen las tareas', mal: ['Quién hace la tarea', 'Dónde termina el proceso', 'Los datos que se guardan'], por: 'Las flechas conectan los elementos en orden.' },
+    ],
+  },
+
+  {
+    id: 'control', n: 7, color: 'con', caso: 'Transporte urbano',
     titulo: 'Mecanismos de control', sub: '¿Cómo se evalúa el sistema?',
     lema: 'Medir, evaluar y corregir: así aprende un sistema.',
     insignia: 'Guardián del lazo',
@@ -446,7 +495,7 @@ export const CAPITULOS: Capitulo[] = [
   },
 
   {
-    id: 'arbol', n: 7, color: 'efe', caso: 'Citas del consultorio médico',
+    id: 'arbol', n: 8, color: 'efe', caso: 'Citas del consultorio médico',
     titulo: 'Árbol de problemas', sub: 'Raíces, tronco y copa',
     lema: 'Porque pasa esto, ocurre esto, y eso genera esto.',
     insignia: 'Jardinero del problema',
@@ -513,7 +562,7 @@ export const CAPITULOS: Capitulo[] = [
   },
 
   {
-    id: 'entorno', n: 8, color: 'env', caso: 'Tienda en línea',
+    id: 'entorno', n: 9, color: 'env', caso: 'Tienda en línea',
     titulo: 'El entorno', sub: 'Lo que condiciona pero no se controla',
     lema: 'El entorno condiciona al sistema, pero no se controla desde él.',
     insignia: 'Vigía del entorno',
@@ -563,7 +612,7 @@ export const CAPITULOS: Capitulo[] = [
   },
 
   {
-    id: 'factibilidad', n: 9, color: 'dat', caso: 'Propuesta: agenda compartida del consultorio',
+    id: 'factibilidad', n: 10, color: 'dat', caso: 'Propuesta: agenda compartida del consultorio',
     titulo: 'Factibilidad y viabilidad', sub: '¿Se puede hacer? ¿Vale la pena?',
     lema: 'Factible: se puede. Viable: conviene y dura.',
     insignia: 'Juez de propuestas',
@@ -634,7 +683,7 @@ export const CAPITULOS: Capitulo[] = [
   },
 
   {
-    id: 'reto', n: 10, color: 'sis', caso: 'Un caso nuevo, al azar',
+    id: 'reto', n: 11, color: 'sis', caso: 'Un caso nuevo, al azar',
     titulo: 'Reto final', sub: 'Un caso nuevo y tu certificado',
     lema: 'Ya piensas como analista. Demuéstralo.',
     insignia: 'Analista certificado',

@@ -40,7 +40,8 @@ const Bienvenida: React.FC = () => {
       </g>
       <g style={{ opacity: ap(f, 0, 15) * (1 - 0.6 * apaga) }}>
         <rect x="520" y="120" width="420" height="440" rx="28" style={{ fill: 'var(--panel)', stroke: 'var(--tenue)', strokeWidth: 4, strokeDasharray: '14 10' }} />
-        <text x="730" y="190" textAnchor="middle" style={txt(36)}>MUNDO DE LA SOLUCIÓN</text>
+        <text x="730" y="178" textAnchor="middle" style={txt(32)}>MUNDO DE</text>
+        <text x="730" y="214" textAnchor="middle" style={txt(32)}>LA SOLUCIÓN</text>
         <rect x="610" y="240" width="240" height="160" rx="14" style={{ fill: 'none', stroke: 'var(--tenue)', strokeWidth: 6 }} />
         {[0, 1, 2].map((i) => <rect key={i} x={640} y={270 + i * 36} width={120 + i * 30} height={14} rx={7} style={{ fill: 'var(--tenue)' }} />)}
         <text x="730" y="470" textAnchor="middle" style={txt(28, 500)}>Se construye después</text>
@@ -288,7 +289,7 @@ const Factibilidad: React.FC = () => {
 // 10 · Todos los capítulos giran y se juntan en un sello de analista.
 const Reto: React.FC = () => {
   const f = useCurrentFrame();
-  const ids = ['sistema', 'modelo', 'actores', 'datos', 'procesos', 'control', 'arbol', 'entorno', 'factibilidad'];
+  const ids = ['sistema', 'modelo', 'actores', 'datos', 'procesos', 'bpmn', 'control', 'arbol', 'entorno', 'factibilidad'];
   const junta = ap(f, 60, 95);
   return (
     <Lienzo>
@@ -313,9 +314,45 @@ const Reto: React.FC = () => {
   );
 };
 
+// 6 · Un diagrama BPMN que se dibuja solo: inicio, tareas por carril, compuerta y fin.
+const Bpmn: React.FC = () => {
+  const f = useCurrentFrame();
+  const caja = (x: number, y: number, t: string, a: number) => (
+    <g style={{ opacity: ap(f, a, a + 10), transformOrigin: `${x}px ${y}px`, scale: String(0.8 + 0.2 * resorte(f, a, 18)) }}>
+      <rect x={x - 95} y={y - 32} width={190} height={64} rx={16} style={{ fill: 'var(--panel)', stroke: col('pro'), strokeWidth: 5 }} />
+      <text x={x} y={y + 10} textAnchor="middle" style={txt(24)}>{t}</text>
+    </g>
+  );
+  const linea = (d: string, a: number) => (
+    <path d={d} pathLength={1} style={{ fill: 'none', stroke: 'var(--tinta)', strokeWidth: 5, strokeDasharray: 1, strokeDashoffset: 1 - ap(f, a, a + 10) }} />
+  );
+  return (
+    <Lienzo>
+      <rect x="40" y="90" width="920" height="250" rx="12" style={{ fill: 'none', stroke: 'var(--linea-fuerte)', strokeWidth: 3, opacity: ap(f, 0, 10) }} />
+      <rect x="40" y="340" width="920" height="250" rx="12" style={{ fill: 'none', stroke: 'var(--linea-fuerte)', strokeWidth: 3, opacity: ap(f, 0, 10) }} />
+      <text x="60" y="125" style={{ ...txt(24), fill: col('dat'), opacity: ap(f, 4, 14) }}>Estudiante</text>
+      <text x="60" y="375" style={{ ...txt(24), fill: col('act'), opacity: ap(f, 4, 14) }}>Bibliotecario</text>
+      <circle cx="120" cy="215" r="26" style={{ fill: 'var(--panel)', stroke: col('efe'), strokeWidth: 4, opacity: ap(f, 8, 16) }} />
+      {linea('M146 215 L235 215', 16)}
+      {caja(330, 215, 'Pedir el libro', 22)}
+      {linea('M330 247 L330 465 L405 465', 34)}
+      {caja(500, 465, 'Buscar el libro', 42)}
+      {linea('M595 465 L655 465', 54)}
+      <g style={{ opacity: ap(f, 58, 68) }}>
+        <path d="M700 420 L745 465 L700 510 L655 465 Z" style={{ fill: 'var(--panel)', stroke: col('sis'), strokeWidth: 5 }} />
+        <path d="M686 451 L714 479 M714 451 L686 479" style={{ stroke: 'var(--tinta)', strokeWidth: 5, strokeLinecap: 'round' }} />
+      </g>
+      {linea('M745 465 L860 465', 70)}
+      <circle cx="886" cy="465" r="26" style={{ fill: 'var(--panel)', stroke: col('act'), strokeWidth: 10, opacity: ap(f, 78, 86) }} />
+      <text x="790" y="450" style={{ ...txt(22), opacity: ap(f, 72, 80) }}>Sí</text>
+      <text x="500" y="650" textAnchor="middle" style={{ ...txt(36), opacity: ap(f, 90, 104) }}>Quién hace qué, en qué orden</text>
+    </Lienzo>
+  );
+};
+
 const MAPA: Record<string, React.FC> = {
   bienvenida: Bienvenida, sistema: Sistema, modelo: Modelo, actores: Actores, datos: Datos,
-  procesos: Procesos, control: Control, arbol: Arbol, entorno: Entorno, factibilidad: Factibilidad, reto: Reto,
+  procesos: Procesos, bpmn: Bpmn, control: Control, arbol: Arbol, entorno: Entorno, factibilidad: Factibilidad, reto: Reto,
 };
 
 export const Concepto: React.FC<{ id: string }> = ({ id }) => {

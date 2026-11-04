@@ -4,7 +4,7 @@
 // Todo el estado del juego vive aquí; los celulares solo lo reciben.
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { abrirCanal, limpiar, nuevoCodigo, type Canal } from './canal';
-import { partida, type PreguntaSala } from './banco';
+import { partida, TEMAS_SALA, type PreguntaSala } from './banco';
 import { Qr } from './Qr';
 import { COLORES_OP, EQUIPOS, FORMAS, PREGUNTAS, TIEMPO, type EstadoSala, type MsgChat, type MsgEntra } from './tipos';
 import { sonar, useMenosMovimiento } from '../estado';
@@ -32,6 +32,7 @@ export const Proyector: React.FC<{ alSalir: () => void }> = ({ alSalir }) => {
   const [i, setI] = useState(0);
   const [quedan, setQuedan] = useState(TIEMPO);
   const [chatOn, setChatOn] = useState(true);
+  const [temaSala, setTemaSala] = useState('todo');
   const [chat, setChat] = useState<Burbuja[]>([]);
   const [flot, setFlot] = useState<Flotante[]>([]);
   const ref = useRef({ fase, i, chatOn });
@@ -157,7 +158,7 @@ export const Proyector: React.FC<{ alSalir: () => void }> = ({ alSalir }) => {
     publicar(true);
   };
   const empezar = () => {
-    preguntas.current = partida(PREGUNTAS);
+    preguntas.current = partida(PREGUNTAS, temaSala);
     jug.current.forEach((j) => { j.p = 0; j.racha = 0; j.ult = -1; });
     lanzar(0);
   };
@@ -238,6 +239,12 @@ export const Proyector: React.FC<{ alSalir: () => void }> = ({ alSalir }) => {
               </div>
               <div className="gente">
                 {lista.map((j) => <span key={j.id} className={'persona' + (j.enLinea ? '' : ' fuera')} style={{ ['--c' as string]: EQUIPOS[j.eq].c }}>{j.av} {j.n}</span>)}
+              </div>
+              <div className="campo">
+                <label htmlFor="tema-sala">Tema de hoy</label>
+                <select id="tema-sala" value={temaSala} onChange={(e) => setTemaSala(e.target.value)}>
+                  {TEMAS_SALA.map((t) => <option key={t.id} value={t.id}>{t.n}</option>)}
+                </select>
               </div>
               <div className="fila-btn">
                 <button className="btn" onClick={empezar} disabled={!lista.length || !codigo}>Empezar · {PREGUNTAS} preguntas</button>
