@@ -54,9 +54,9 @@
 .barra-op b { font-family: var(--f-titulo); min-width: 2ch; text-align: right; }
 .pie-ronda { display: flex; gap: 12px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
 .revela-sala { display: grid; gap: 12px; }
-.por-sala { font-size: 19px; padding: 14px 16px; border-radius: 14px; background: var(--panel); border-left: 6px solid var(--bien); }
+.por-sala { font-size: 19px; padding: 14px 16px; border-radius: 14px; background: color-mix(in srgb, var(--bien) 14%, var(--panel)); }
 .top-sala { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; counter-reset: top; }
-.top-sala li { counter-increment: top; display: flex; justify-content: space-between; gap: 10px; padding: 10px 14px; border-radius: 12px; background: var(--panel); border-left: 6px solid var(--c); font-weight: 700; font-size: 18px; }
+.top-sala li { counter-increment: top; display: flex; justify-content: space-between; gap: 10px; padding: 10px 14px; border-radius: 12px; background: var(--panel); background: color-mix(in srgb, var(--c) 14%, var(--panel)); font-weight: 700; font-size: 18px; }
 .top-sala li span::before { content: counter(top) '. '; color: var(--tenue); }
 .top-sala li b { font-family: var(--f-titulo); color: var(--c-sis); }
 
@@ -95,7 +95,7 @@
 .chat-cabeza h2 { font-size: 20px; }
 .chat-cabeza .btn { min-height: 38px; padding: 6px 12px; font-size: 14px; }
 .mensajes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; overflow-y: auto; align-content: end; flex: 1; }
-.mensajes li { padding: 8px 12px; border-radius: 12px 12px 12px 4px; background: var(--panel2); border-left: 4px solid var(--c, var(--tenue)); animation: salta .35s; overflow-wrap: anywhere; }
+.mensajes li { padding: 8px 12px; border-radius: 12px 12px 12px 4px; background: color-mix(in srgb, var(--c, var(--tenue)) 12%, var(--panel2)); animation: salta .35s; overflow-wrap: anywhere; }
 .mensajes li.vacio { color: var(--tenue); border-left-color: transparent; animation: none; }
 .mensajes .quien { display: block; font-size: 13px; font-weight: 700; color: var(--c, var(--tenue)); }
 .mensajes.mini li { font-size: 14px; padding: 6px 10px; }
