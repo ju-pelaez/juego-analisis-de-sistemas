@@ -7,7 +7,14 @@
 //   modoanalista/v1/CODIGO/estado  → el proyector publica el estado del juego (queda guardado)
 //   modoanalista/v1/CODIGO/entra   → los celulares mandan: entrar, responder
 //   modoanalista/v1/CODIGO/chat    → todos: mensajes y emoticones del salón
-import mqtt, { type MqttClient } from 'mqtt';
+import type { MqttClient, IClientOptions } from 'mqtt';
+
+// El cliente MQTT se carga del CDN al abrir la sala (igual que en la sala del árbol de problemas).
+// Empaquetado por Vite no recibe la respuesta del servidor; desde el CDN funciona en cualquier navegador.
+const MQTT_CDN = 'https://cdn.jsdelivr.net/npm/mqtt@5.16.1/dist/mqtt.esm.js';
+export type Mqtt = { connect: (url: string, op: IClientOptions) => MqttClient };
+let cargado: Promise<Mqtt> | null = null;
+export const cargarMqtt = () => (cargado ??= import(/* @vite-ignore */ MQTT_CDN).then((m) => (m.default || m) as Mqtt));
 
 const SERVIDOR = 'wss://broker.hivemq.com:8884/mqtt';
 const RAIZ = 'modoanalista/v1/';
@@ -20,6 +27,7 @@ export type Canal = {
 };
 
 export function abrirCanal(
+  mqtt: Mqtt,
   codigo: string,
   subs: ('estado' | 'entra' | 'chat')[],
   alMensaje: (sub: string, dato: unknown, crudo: string) => void,

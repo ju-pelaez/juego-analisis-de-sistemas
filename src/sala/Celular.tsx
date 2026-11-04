@@ -3,7 +3,7 @@
 // con botones grandes de color y figura, ve si acertó y por qué, y chatea con el salón
 // (frases rápidas, texto corto y emoticones que vuelan en el proyector).
 import React, { useEffect, useRef, useState } from 'react';
-import { abrirCanal, limpiar, type Canal } from './canal';
+import { abrirCanal, limpiar, type Canal, type Mqtt } from './canal';
 import { AVATARES, COLORES_OP, EQUIPOS, FORMAS, FRASES, REACCIONES, type EstadoSala, type MsgChat } from './tipos';
 import { sonar, vibrar } from '../estado';
 
@@ -17,7 +17,7 @@ function miId() {
   return id;
 }
 
-export const Celular: React.FC<{ codigo: string; alSalir: () => void }> = ({ codigo, alSalir }) => {
+export const Celular: React.FC<{ mqtt: Mqtt; codigo: string; alSalir: () => void }> = ({ mqtt, codigo, alSalir }) => {
   const id = useRef(miId()).current;
   const perfil = (() => { try { return JSON.parse(leer('ma-sala-perfil') || '{}'); } catch { return {}; } })();
   const [nombre, setNombre] = useState<string>(perfil.n || '');
@@ -37,35 +37,45 @@ export const Celular: React.FC<{ codigo: string; alSalir: () => void }> = ({ cod
 
   useEffect(() => {
     if (!dentro) return;
-    const c = abrirCanal(codigo, ['estado', 'chat'], (sub, dato) => {
-      if (sub === 'estado') {
-        const e = dato as EstadoSala | null;
-        if (e && e.v !== 1) return;
-        setEst(e);
-        if (e?.fase === 'pregunta' && typeof e.quedan === 'number') fin.current = performance.now() + e.quedan * 1000;
-        if (e && e.fase !== faseAntes.current) {
-          if (e.fase === 'revela') {
-            const yo = e.jug[id];
-            if (yo) { sonar(yo[2] === 1 ? 'bien' : 'mal'); vibrar(yo[2] === 1 ? 40 : 120); }
+    let c: Canal | null = null;
+    // Se espera un momento antes de conectar: si React desmonta enseguida, no queda una conexión a medias.
+    const arranque = setTimeout(() => {
+      c = abrirCanal(mqtt, codigo, ['estado', 'chat'], (sub, dato) => {
+        if (sub === 'estado') {
+          const e = dato as EstadoSala | null;
+          if (e && e.v !== 1) return;
+          setEst(e);
+          if (e?.fase === 'pregunta' && typeof e.quedan === 'number') fin.current = performance.now() + e.quedan * 1000;
+          if (e && e.fase !== faseAntes.current) {
+            if (e.fase === 'revela') {
+              const yo = e.jug[id];
+              if (yo) { sonar(yo[2] === 1 ? 'bien' : 'mal'); vibrar(yo[2] === 1 ? 40 : 120); }
+            }
+            if (e.fase === 'pregunta') sonar('tic');
+            faseAntes.current = e.fase;
           }
-          if (e.fase === 'pregunta') sonar('tic');
-          faseAntes.current = e.fase;
+        } else if (sub === 'chat') {
+          const m = dato as MsgChat;
+          if (!m || !m.txt) return;
+          const k = ++cuenta.current;
+          setChat((c) => [...c.slice(-20), { k, n: limpiar(m.n, 20), av: limpiar(m.av, 4), eq: Number(m.eq) || 0, txt: limpiar(m.txt) }]);
         }
-      } else if (sub === 'chat') {
-        const m = dato as MsgChat;
-        if (!m || !m.txt) return;
-        const k = ++cuenta.current;
-        setChat((c) => [...c.slice(-20), { k, n: limpiar(m.n, 20), av: limpiar(m.av, 4), eq: Number(m.eq) || 0, txt: limpiar(m.txt) }]);
-      }
-    }, (ok) => {
-      setConectado(ok);
-      if (ok) c.publicar('entra', { t: 'hola', id, n: nombre, av: avatar });
-    }, { sub: 'entra', dato: { t: 'adios', id } });
-    canal.current = c;
+      }, (ok) => {
+        setConectado(ok);
+        if (ok) c?.publicar('entra', { t: 'hola', id, n: nombre, av: avatar });
+      }, { sub: 'entra', dato: { t: 'adios', id } });
+      canal.current = c;
+    }, 250);
     // Al volver a la pantalla (después de bloquear el celular) se vuelve a saludar.
-    const volver = () => { if (document.visibilityState === 'visible') c.publicar('entra', { t: 'hola', id, n: nombre, av: avatar }); };
+    const volver = () => { if (document.visibilityState === 'visible') c?.publicar('entra', { t: 'hola', id, n: nombre, av: avatar }); };
     document.addEventListener('visibilitychange', volver);
-    return () => { document.removeEventListener('visibilitychange', volver); c.publicar('entra', { t: 'adios', id }); setTimeout(() => c.cerrar(), 150); };
+    return () => {
+      clearTimeout(arranque);
+      document.removeEventListener('visibilitychange', volver);
+      const viejo = c;
+      viejo?.publicar('entra', { t: 'adios', id });
+      setTimeout(() => viejo?.cerrar(), 150);
+    };
   }, [dentro]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reloj local de la pregunta.

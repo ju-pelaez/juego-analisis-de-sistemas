@@ -3,7 +3,7 @@
 // preguntas, cuenta las respuestas, muestra el chat y los emoticones del salón y el podio final.
 // Todo el estado del juego vive aquí; los celulares solo lo reciben.
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { abrirCanal, limpiar, nuevoCodigo, type Canal } from './canal';
+import { abrirCanal, limpiar, nuevoCodigo, type Canal, type Mqtt } from './canal';
 import { partida, TEMAS_SALA, type PreguntaSala } from './banco';
 import { Qr } from './Qr';
 import { COLORES_OP, EQUIPOS, FORMAS, PREGUNTAS, TIEMPO, type EstadoSala, type MsgChat, type MsgEntra } from './tipos';
@@ -17,7 +17,7 @@ const PUBLICO = 'https://juego-analisis-de-sistemas.vercel.app/';
 const ES_LOCAL = location.protocol !== 'https:' || /^(localhost|127\.|10\.|192\.168\.|\[::1\])/.test(location.hostname);
 const BASE = ES_LOCAL ? PUBLICO : location.origin + '/';
 
-export const Proyector: React.FC<{ alSalir: () => void }> = ({ alSalir }) => {
+export const Proyector: React.FC<{ mqtt: Mqtt; alSalir: () => void }> = ({ mqtt, alSalir }) => {
   const menos = useMenosMovimiento();
   const [codigo, setCodigo] = useState('');
   const [conectado, setConectado] = useState(false);
@@ -71,8 +71,9 @@ export const Proyector: React.FC<{ alSalir: () => void }> = ({ alSalir }) => {
     let cod = nuevoCodigo();
     let revisando = true;
     let ocupado = false;
+    let propio: Canal | null = null; // el canal de este montaje (React puede montar dos veces)
     const abrir = () => {
-      const c = abrirCanal(cod, ['estado', 'entra', 'chat'], (sub, dato) => {
+      const c = abrirCanal(mqtt, cod, ['estado', 'entra', 'chat'], (sub, dato) => {
         if (!vivo) return;
         if (sub === 'estado') { if (revisando && dato && (dato as EstadoSala).v) ocupado = true; return; }
         if (revisando) return;
@@ -80,6 +81,7 @@ export const Proyector: React.FC<{ alSalir: () => void }> = ({ alSalir }) => {
         if (sub === 'chat') charla(dato as MsgChat);
       }, (ok) => vivo && setConectado(ok), { sub: 'estado', dato: null, guardar: true });
       canal.current = c;
+      propio = c;
       // ¿Ya hay otra sala abierta con este código? Se espera un momento a ver si llega su estado.
       c.cliente.once('connect', () => setTimeout(() => {
         if (!vivo) return;
@@ -89,14 +91,17 @@ export const Proyector: React.FC<{ alSalir: () => void }> = ({ alSalir }) => {
         publicar(true);
       }, 1200));
     };
-    abrir();
-    const cerrar = () => { canal.current?.publicar('estado', null, true); };
+    // Se espera un momento antes de conectar: si React desmonta enseguida, no queda una conexión a medias.
+    const arranque = setTimeout(abrir, 250);
+    const cerrar = () => { if (!revisando) propio?.publicar('estado', null, true); };
     addEventListener('pagehide', cerrar);
     return () => {
       vivo = false;
+      clearTimeout(arranque);
       removeEventListener('pagehide', cerrar);
       cerrar();
-      setTimeout(() => canal.current?.cerrar(), 200);
+      const c = propio;
+      setTimeout(() => c?.cerrar(), 200);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

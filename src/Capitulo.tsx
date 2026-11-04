@@ -148,7 +148,7 @@ export const Capitulo: React.FC<{
         <section aria-label="Fichas del capítulo">
           <div className="guia">
             <CaraProfe pose={ficha === cap.fichas.length - 1 ? 'celebra' : 'explica'} size={72} />
-            <p className="burbuja"><b className="quien-habla">{NOMBRE_PROFE}</b>{ficha === 0 ? (nombre ? `${nombre}, ` : '') + cap.dice : ficha === cap.fichas.length - 1 ? 'Última ficha. Después viene el minijuego.' : 'Léela con calma. Lo vas a necesitar.'}</p>
+            <p className="burbuja"><b className="quien-habla">{NOMBRE_PROFE}</b>{ficha === 0 ? cap.dice : ficha === cap.fichas.length - 1 ? 'Última ficha. Después viene el minijuego.' : 'Léela con calma. Lo vas a necesitar.'}</p>
           </div>
           <VistaFicha key={ficha} f={cap.fichas[ficha]} cap={cap} />
           <div className="nav-fichas">
