@@ -12,6 +12,7 @@ import { Preguntas } from './componentes/Preguntas';
 import { Estrellas } from './componentes/Piezas';
 import { ConceptoBucle } from './remotion/Cinematica';
 import { Cine } from './componentes/Cine';
+import { MiniReto, tieneReto } from './componentes/MiniReto';
 import { Certificado, DURACION_CERT, DURACION_INSIGNIA, Insignia } from './remotion/Extras';
 import { Deslizar } from './juegos/Deslizar';
 import { Frontera } from './juegos/Frontera';
@@ -70,6 +71,9 @@ export const Capitulo: React.FC<{
 }> = ({ cap, nombre, siguiente, puntosTotales, alGuardar, alSalir, alIr }) => {
   const [fase, setFase] = useState<Fase>('cine');
   const [ficha, setFicha] = useState(0);
+  // Mini retos de las fichas: ficha → acertó o no. Suman al puntaje del capítulo.
+  const [mini, setMini] = useState<Record<number, boolean>>({});
+  const fichaLista = ficha in mini || !tieneReto(cap.fichas[ficha]);
   const [juego, setJuego] = useState({ a: 0, t: 0 });
   const [resultado, setResultado] = useState<ResultadoCap | null>(null);
   const [caso, setCaso] = useState('');
@@ -99,7 +103,8 @@ export const Capitulo: React.FC<{
   };
   const finJuego = (a: number, t: number) => {
     setJuego({ a, t });
-    if (cap.preguntas.length) ir('preguntas'); else terminar(a, t);
+    const ma = Object.values(mini).filter(Boolean).length, mt = Object.keys(mini).length;
+    if (cap.preguntas.length) ir('preguntas'); else terminar(a + ma, t + mt);
   };
 
   const juegoVista = () => {
@@ -159,21 +164,24 @@ export const Capitulo: React.FC<{
             <p className="burbuja"><b className="quien-habla">{NOMBRE_PROFE}</b>{ficha === 0 ? conNombre(cap.dice) : ficha === cap.fichas.length - 1 ? 'Última ficha. Después viene el minijuego.' : 'Léela con calma. Lo vas a necesitar.'}</p>
           </div>
           <VistaFicha key={ficha} f={cap.fichas[ficha]} cap={cap} />
+          <MiniReto key={'reto-' + ficha} ficha={cap.fichas[ficha]} otras={cap.fichas}
+            alResponder={(ok) => setMini((m) => ({ ...m, [ficha]: ok }))} />
           <div className="nav-fichas">
             <button className="btn sec" onClick={() => setFicha(ficha - 1)} disabled={ficha === 0} aria-label="Ficha anterior">←</button>
             <div className="puntos" aria-label={`Ficha ${ficha + 1} de ${cap.fichas.length}`}>
-              {cap.fichas.map((_, k) => <i key={k} className={k === ficha ? 'on' : ''} />)}
+              {cap.fichas.map((_, k) => <i key={k} className={(k === ficha ? 'on' : '') + (mini[k] === true ? ' gano' : mini[k] === false ? ' perdio' : '')} />)}
+              <span className="mini-cuenta" aria-label="Mini retos ganados">⚡ {Object.values(mini).filter(Boolean).length}</span>
             </div>
             {ficha < cap.fichas.length - 1
-              ? <button className="btn" onClick={() => { sonar('tic'); setFicha(ficha + 1); }}>Siguiente →</button>
-              : <button className="btn" onClick={() => { sonar('entra'); ir('juego'); }}>{esFinal ? '¡Al reto!' : '¡A jugar!'}</button>}
+              ? <button className="btn" disabled={!fichaLista} title={fichaLista ? undefined : 'Primero resuelve el mini reto'} onClick={() => { sonar('tic'); setFicha(ficha + 1); }}>Siguiente →</button>
+              : <button className="btn" disabled={!fichaLista} title={fichaLista ? undefined : 'Primero resuelve el mini reto'} onClick={() => { sonar('entra'); ir('juego'); }}>{esFinal ? '¡Al reto!' : '¡A jugar!'}</button>}
           </div>
         </section>
       )}
 
       {fase === 'juego' && juegoVista()}
 
-      {fase === 'preguntas' && <Preguntas preguntas={cap.preguntas} alTerminar={(a, t) => terminar(juego.a + a, juego.t + t)} />}
+      {fase === 'preguntas' && <Preguntas preguntas={cap.preguntas} alTerminar={(a, t) => terminar(juego.a + a + Object.values(mini).filter(Boolean).length, juego.t + t + Object.keys(mini).length)} />}
 
       {fase === 'fin' && resultado && (
         <section className="resultado" aria-labelledby="t-res">

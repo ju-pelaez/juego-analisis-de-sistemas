@@ -120,4 +120,6 @@ export function conNombre(frase: string, n = nombreJugador) {
 }
 
 // Vibración corta en el celular (si el aparato la tiene).
-export const vibrar = (ms = 30) => { try { navigator.vibrate?.(ms); } catch { /* sin vibración */ } };
+export const vibrar = (ms = 30) => {
+  try { if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(ms); } catch { /* sin vibración */ }
+};
