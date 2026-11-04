@@ -1,1 +1,318 @@
-{}
+{
+ "bienvenida-dice": {
+  "ms": 9200,
+  "h": "b0dea320b1"
+ },
+ "bienvenida-lema": {
+  "ms": 6680,
+  "h": "c8859bfd42"
+ },
+ "bienvenida-f0": {
+  "ms": 19840,
+  "h": "2e480db7dc"
+ },
+ "bienvenida-f1": {
+  "ms": 30660,
+  "h": "e5b88c6530"
+ },
+ "bienvenida-f2": {
+  "ms": 28980,
+  "h": "8dff76f490"
+ },
+ "bienvenida-f3": {
+  "ms": 44420,
+  "h": "bc7235936a"
+ },
+ "bienvenida-f4": {
+  "ms": 13360,
+  "h": "08322749e9"
+ },
+ "sistema-dice": {
+  "ms": 6300,
+  "h": "0314079b9f"
+ },
+ "sistema-lema": {
+  "ms": 4660,
+  "h": "ccbdeaf12c"
+ },
+ "sistema-f0": {
+  "ms": 24640,
+  "h": "2ba25287ba"
+ },
+ "sistema-f1": {
+  "ms": 32659,
+  "h": "08d831fc32"
+ },
+ "sistema-f2": {
+  "ms": 20720,
+  "h": "096be08dbf"
+ },
+ "sistema-f3": {
+  "ms": 17800,
+  "h": "bce1b1398d"
+ },
+ "modelo-dice": {
+  "ms": 9800,
+  "h": "1dc656e5d8"
+ },
+ "modelo-lema": {
+  "ms": 7400,
+  "h": "b9df387e10"
+ },
+ "modelo-f0": {
+  "ms": 17020,
+  "h": "e5b8231fef"
+ },
+ "modelo-f1": {
+  "ms": 29020,
+  "h": "b811824745"
+ },
+ "modelo-f2": {
+  "ms": 17620,
+  "h": "80b8a49f85"
+ },
+ "modelo-f3": {
+  "ms": 19220,
+  "h": "13f222b747"
+ },
+ "actores-dice": {
+  "ms": 9560,
+  "h": "79a2286c31"
+ },
+ "actores-lema": {
+  "ms": 5860,
+  "h": "c0ae8a6e32"
+ },
+ "actores-f0": {
+  "ms": 21500,
+  "h": "f6c3e9cf8b"
+ },
+ "actores-f1": {
+  "ms": 27120,
+  "h": "a0e124893b"
+ },
+ "actores-f2": {
+  "ms": 21080,
+  "h": "cb5a91d1c7"
+ },
+ "actores-f3": {
+  "ms": 16740,
+  "h": "12f0f2a05d"
+ },
+ "datos-dice": {
+  "ms": 7920,
+  "h": "e934131f6c"
+ },
+ "datos-lema": {
+  "ms": 4580,
+  "h": "99e44dc8f6"
+ },
+ "datos-f0": {
+  "ms": 20480,
+  "h": "303a8c09b8"
+ },
+ "datos-f1": {
+  "ms": 26700,
+  "h": "dc23af729f"
+ },
+ "datos-f2": {
+  "ms": 20940,
+  "h": "20d2e5d5dc"
+ },
+ "datos-f3": {
+  "ms": 17000,
+  "h": "166ebe806b"
+ },
+ "procesos-dice": {
+  "ms": 4460,
+  "h": "5268d30c90"
+ },
+ "procesos-lema": {
+  "ms": 4660,
+  "h": "e4454b34df"
+ },
+ "procesos-f0": {
+  "ms": 18620,
+  "h": "b842a12077"
+ },
+ "procesos-f1": {
+  "ms": 11040,
+  "h": "bbd022cb63"
+ },
+ "procesos-f2": {
+  "ms": 24280,
+  "h": "a1b00935cb"
+ },
+ "procesos-f3": {
+  "ms": 16180,
+  "h": "9d87e5541d"
+ },
+ "bpmn-dice": {
+  "ms": 9000,
+  "h": "dc093e5185"
+ },
+ "bpmn-lema": {
+  "ms": 5100,
+  "h": "2ca78b8e8c"
+ },
+ "bpmn-f0": {
+  "ms": 19460,
+  "h": "bb16ace082"
+ },
+ "bpmn-f1": {
+  "ms": 35680,
+  "h": "4cbb40b0a9"
+ },
+ "bpmn-f2": {
+  "ms": 31620,
+  "h": "0bf332e6b1"
+ },
+ "bpmn-f3": {
+  "ms": 25280,
+  "h": "5709309ee5"
+ },
+ "control-dice": {
+  "ms": 4880,
+  "h": "d0d1bbe735"
+ },
+ "control-lema": {
+  "ms": 4700,
+  "h": "d7ec54f1d7"
+ },
+ "control-f0": {
+  "ms": 9360,
+  "h": "67fe0ecb06"
+ },
+ "control-f1": {
+  "ms": 27660,
+  "h": "f205cc0b26"
+ },
+ "control-f2": {
+  "ms": 18680,
+  "h": "8b751f0aae"
+ },
+ "control-f3": {
+  "ms": 11440,
+  "h": "ab7faec2b3"
+ },
+ "arbol-dice": {
+  "ms": 9640,
+  "h": "59a6bb8d2b"
+ },
+ "arbol-lema": {
+  "ms": 6220,
+  "h": "7ee3212d45"
+ },
+ "arbol-f0": {
+  "ms": 23820,
+  "h": "f944dc203d"
+ },
+ "arbol-f1": {
+  "ms": 20160,
+  "h": "a3abe9ab9d"
+ },
+ "arbol-f2": {
+  "ms": 19120,
+  "h": "53501eee68"
+ },
+ "arbol-f3": {
+  "ms": 38440,
+  "h": "130b39987f"
+ },
+ "entorno-dice": {
+  "ms": 5780,
+  "h": "f689e65ef8"
+ },
+ "entorno-lema": {
+  "ms": 6340,
+  "h": "e04823c9e3"
+ },
+ "entorno-f0": {
+  "ms": 12600,
+  "h": "aaf02ace15"
+ },
+ "entorno-f1": {
+  "ms": 23580,
+  "h": "dab9bc70c4"
+ },
+ "entorno-f2": {
+  "ms": 20540,
+  "h": "6be494421d"
+ },
+ "factibilidad-dice": {
+  "ms": 6200,
+  "h": "799593979d"
+ },
+ "factibilidad-lema": {
+  "ms": 4260,
+  "h": "c939850e01"
+ },
+ "factibilidad-f0": {
+  "ms": 26300,
+  "h": "8984b75288"
+ },
+ "factibilidad-f1": {
+  "ms": 22060,
+  "h": "27e162b487"
+ },
+ "factibilidad-f2": {
+  "ms": 37780,
+  "h": "576b3dce97"
+ },
+ "factibilidad-f3": {
+  "ms": 18760,
+  "h": "cdd76c042a"
+ },
+ "reto-dice": {
+  "ms": 5440,
+  "h": "7b30387d08"
+ },
+ "reto-lema": {
+  "ms": 4900,
+  "h": "5be906790c"
+ },
+ "reto-f0": {
+  "ms": 20940,
+  "h": "ecda2a8d60"
+ },
+ "bien-0": {
+  "ms": 3060,
+  "h": "2c0ab017ea"
+ },
+ "bien-1": {
+  "ms": 2380,
+  "h": "95e252d8f4"
+ },
+ "bien-2": {
+  "ms": 1020,
+  "h": "8bbb02c99e"
+ },
+ "bien-3": {
+  "ms": 3740,
+  "h": "16e851358e"
+ },
+ "mal-0": {
+  "ms": 2260,
+  "h": "8cd63a9157"
+ },
+ "mal-1": {
+  "ms": 3300,
+  "h": "f8f8c8e082"
+ },
+ "mal-2": {
+  "ms": 3820,
+  "h": "7462937314"
+ },
+ "insignia": {
+  "ms": 4660,
+  "h": "1b5bdbfe52"
+ },
+ "certificado": {
+  "ms": 6420,
+  "h": "700908fe42"
+ },
+ "portada": {
+  "ms": 7200,
+  "h": "e3531265d6"
+ }
+}
