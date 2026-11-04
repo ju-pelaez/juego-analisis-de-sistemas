@@ -449,7 +449,7 @@ a { color: var(--c-dat); }
 .mundo-fondo .f2 { left: 30%; bottom: 6%; animation-delay: -8s; } .mundo-fondo .f3 { right: 22%; bottom: 18%; animation-delay: -2s; }
 .mundo-fondo .f4 { left: 55%; top: 8%; animation-delay: -11s; } .mundo-fondo .f5 { left: 12%; top: 62%; animation-delay: -6s; }
 @keyframes flota { to { translate: 30px -40px; rotate: 25deg; } }
-.mundo .titulo-cap h1 { background: linear-gradient(90deg, var(--tinta), var(--mundo)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.mundo .titulo-cap h1 { color: var(--tinta); text-decoration: underline; text-decoration-color: var(--mundo); text-decoration-thickness: 4px; text-underline-offset: 6px; }
 .mundo .progreso-juego i { background: var(--mundo); }
 
 /* ---------- barra en celular ---------- */
