@@ -189,8 +189,20 @@ export const Paseo: React.FC<{
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  // Efectos de juego: números que saltan, polvo, bloque golpeado, cartel del mundo, transición y pantalla de inicio.
+  const [chispas, setChispas] = useState<{ k: number; x: number; y: number; t: string; tipo: string }[]>([]);
+  const chispa = (x: number, y: number, t: string, tipo = 'pts') => {
+    const k = Math.random();
+    setChispas((c) => [...c.slice(-12), { k, x, y, t, tipo }]);
+    setTimeout(() => setChispas((c) => c.filter((q) => q.k !== k)), 900);
+  };
+  const [golpeado, setGolpeado] = useState<string | null>(null);
+  const [cartel, setCartel] = useState<{ zona: number; k: number } | null>(null);
+  const [saliendo, setSaliendo] = useState(false);
+  const [portada, setPortada] = useState(() => { try { return !sessionStorage.getItem('paseo-visto'); } catch { return false; } });
+  const empezar = () => { try { sessionStorage.setItem('paseo-visto', '1'); } catch { /* sin almacenamiento */ } setPortada(false); sonar('entra'); };
   const pausa = useRef(false);
-  pausa.current = !!bono;
+  pausa.current = !!bono || portada || saliendo;
 
   const avisar = (t: string) => setAviso({ t, k: Date.now() });
   const hecho = (id: string) => !!prog.caps[id];
@@ -200,15 +212,22 @@ export const Paseo: React.FC<{
     if (!cerca || pausa.current) return;
     sonar('entra');
     alMover(String(Math.round(j.current.x)));
-    alEntrar(cerca);
+    const id = cerca;
+    setSaliendo(true);
+    setTimeout(() => alEntrar(id), 560);
   };
   const entrarRef = useRef(entrar);
   entrarRef.current = entrar;
+  const empezarRef = useRef(empezar);
+  empezarRef.current = empezar;
+  const portadaRef = useRef(portada);
+  portadaRef.current = portada;
 
   // Teclado: WASD y flechas.
   useEffect(() => {
     const MAPA: Record<string, string> = { a: 'izq', arrowleft: 'izq', d: 'der', arrowright: 'der', w: 'salto', arrowup: 'salto', ' ': 'salto' };
     const abajo = (e: KeyboardEvent) => {
+      if (portadaRef.current && ['enter', ' ', 'w', 'a', 's', 'd'].includes(e.key.toLowerCase())) { e.preventDefault(); empezarRef.current(); return; }
       if (pausa.current || (e.target as HTMLElement)?.closest?.('input, textarea, select, .bono')) return;
       const k = e.key.toLowerCase();
       if (MAPA[k]) { teclas.current[MAPA[k]] = true; e.preventDefault(); }
@@ -243,6 +262,8 @@ export const Paseo: React.FC<{
         const antesY = p.y;
         p.vy -= GRAVEDAD * dt;
         p.y += p.vy * dt;
+        const caia = p.vy;
+        const estabaEnSuelo = p.enSuelo;
         p.enSuelo = false;
         if (p.y <= 0) { p.y = 0; p.vy = 0; p.enSuelo = true; }
         // Bloques: golpear desde abajo o pararse encima
@@ -257,11 +278,19 @@ export const Paseo: React.FC<{
             p.y = abajoB - ALTO_J; p.vy = -60;
             if (b.secreto && !esVisible) { setDescubiertos((s) => new Set(s).add(b.id)); sonar('logro'); avisar('¡Encontraste un bloque secreto!'); }
             else sonar('tic');
+            setGolpeado(b.id); setTimeout(() => setGolpeado(null), 320);
+            chispa(b.x + BLOQUE / 2, b.y + BLOQUE + 6, b.secreto ? '★' : '?', 'bloque');
             teclas.current = {};
             setTimeout(() => setBono(b), 180);
           } else if (esVisible && p.vy <= 0 && antesY >= arribaB - 2 && p.y <= arribaB) {
             p.y = arribaB; p.vy = 0; p.enSuelo = true;
           }
+        }
+        // Al caer de un salto: polvo y un pequeño aplastón del personaje.
+        if (p.enSuelo && !estabaEnSuelo && caia < -420) {
+          chispa(p.x, p.y, '', 'polvo');
+          const el = jugadorEl.current;
+          if (el) { el.classList.remove('aterriza'); void el.offsetWidth; el.classList.add('aterriza'); }
         }
         // Datos
         for (const d of mundo.datos) {
@@ -269,7 +298,7 @@ export const Paseo: React.FC<{
             if (!recogidosRef.current.has(d.id)) {
               recogidosRef.current = new Set(recogidosRef.current).add(d.id);
               setRecogidos(recogidosRef.current);
-              sonar('tic'); alBono(d.id, 1);
+              sonar('tic'); alBono(d.id, 1); chispa(d.x, d.y + 22, '+1');
             }
           }
         }
@@ -280,7 +309,7 @@ export const Paseo: React.FC<{
           e.x += e.dir * 70 * dt;
           if (e.x > b.x1) e.dir = -1; if (e.x < b.x0) e.dir = 1;
           if (Math.abs(p.x - e.x) < 30 && p.y < 30) {
-            if (p.vy < 0 && antesY > 14) { e.vivo = false; p.vy = 420; sonar('entra'); avisar('¡Bug eliminado! Un buen analista detecta los problemas a tiempo.'); }
+            if (p.vy < 0 && antesY > 14) { e.vivo = false; p.vy = 420; sonar('entra'); chispa(e.x, 40, '¡PLAF!', 'plaf'); avisar('¡Bug eliminado! Un buen analista detecta los problemas a tiempo.'); }
             else if (ahora - p.golpe > 900) { p.golpe = ahora; p.x = antesX - Math.sign(e.x - p.x || 1) * 60; p.vy = 300; sonar('mal'); vibrar(60); avisar('¡Un bug! Sáltale encima para eliminarlo.'); }
           }
         }
@@ -304,7 +333,7 @@ export const Paseo: React.FC<{
       if (id !== ultimoCerca) { ultimoCerca = id; setCerca(id); if (id) sonar('tic'); }
       let zi = 0;
       mundo.inicioZona.forEach((x0, k) => { if (p.x >= x0) zi = k; });
-      if (zi !== ultimaZona) { if (ultimaZona >= 0) avisar(`Mundo ${zi + 1}: ${ZONAS[zi].nombre}`); ultimaZona = zi; setZona(zi); }
+      if (zi !== ultimaZona) { ultimaZona = zi; setZona(zi); setCartel({ zona: zi, k: ahora }); }
       const camina = !!(teclas.current.der || teclas.current.izq) && !pausa.current;
       if (camina !== ultimoCamina) { ultimoCamina = camina; setCaminando(camina); }
       raf = requestAnimationFrame(paso);
@@ -314,7 +343,12 @@ export const Paseo: React.FC<{
   }, [mundo, descubiertos]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Viajar rápido a un capítulo (los puntos de arriba).
-  const viajar = (x: number) => { j.current.x = x; j.current.y = 0; j.current.vy = 0; sonar('entra'); setCuadro((n) => n + 1); };
+  const viajar = (x: number) => {
+    const vw = (escenario.current?.clientWidth || 800) / escalaRef.current;
+    j.current.x = x; j.current.y = 0; j.current.vy = 0;
+    j.current.cam = Math.max(0, Math.min(mundo.ancho - vw, x - vw * 0.42)); // la cámara llega de una vez
+    sonar('entra'); setCuadro((n) => n + 1);
+  };
 
   // Botones táctiles: mientras se mantienen presionados.
   const boton = (k: string) => ({
@@ -334,10 +368,7 @@ export const Paseo: React.FC<{
   return (
     <div className="paseo">
       <div className="paseo-hud">
-        <span className="ph-chip" title="Datos recogidos">🧊 {recogidos.size}/{totalDatos}</span>
-        <span className="ph-chip" title="Bloques de reto resueltos">❓ {bloquesGanados}/{totalBloques}</span>
-        <span className="ph-chip" title="Estrellas">★ {estrellas}</span>
-        <span className="ph-chip ph-pts">{puntos} pts</span>
+        <span className="ph-mundo">MUNDO {zona + 1} · <b>{z.nombre}</b></span>
         <nav className="ph-ruta" aria-label="Viajar a un capítulo">
           {mundo.casas.map((c) => (
             <button key={c.cap.id} className={'ph-punto' + (hecho(c.cap.id) ? ' hecho' : '') + (c.cap.id === cerca ? ' aqui' : '')}
@@ -349,6 +380,21 @@ export const Paseo: React.FC<{
 
       <div ref={escenario} className={'escenario deco-' + z.deco} style={{ height: ALTO * escala, background: `linear-gradient(${z.cielo[0]}, ${z.cielo[1]})` }}
         aria-label={`Mundo ${zona + 1}: ${z.nombre}. Camina con A y D o con las flechas, salta con W o espacio y entra con S o Enter.`} role="application">
+        {/* marcador del juego, dentro de la escena */}
+        <div className="hud-escena" aria-label="Marcador">
+          <span title="Datos recogidos"><i className="ico-dato" /> {recogidos.size}/{totalDatos}</span>
+          <span title="Bloques de reto resueltos"><i className="ico-bloque">?</i> {bloquesGanados}/{totalBloques}</span>
+          <span title="Estrellas" className="hud-estrella">★ {estrellas}</span>
+          <span className="hud-pts">{puntos}</span>
+        </div>
+        {/* ambiente de cada mundo: nubes, gaviotas, luciérnagas o nieve */}
+        <div key={'amb' + zona} className={'ambiente amb-' + z.deco} aria-hidden="true">
+          {Array.from({ length: z.deco === 'nieve' ? 28 : z.deco === 'bosque' ? 16 : 5 }, (_, k) => (
+            // Posiciones y tiempos repartidos (sin azar, para que no cambien en cada dibujo).
+            <i key={k} style={{ ['--k' as string]: k, left: z.deco === 'nieve' || z.deco === 'bosque' ? `${(k * 37) % 97}%` : undefined,
+              animationDelay: z.deco === 'nieve' ? `${-((k * 1.7) % 7)}s` : undefined, animationDuration: z.deco === 'nieve' ? `${6 + ((k * 13) % 5)}s` : undefined }} />
+          ))}
+        </div>
         {/* astro del cielo */}
         <div className={'astro ' + z.astro} aria-hidden="true" />
         {z.astro === 'luna' && <div className="estrellas-cielo" aria-hidden="true" />}
@@ -409,7 +455,7 @@ export const Paseo: React.FC<{
             const visible = !b.secreto || descubiertos.has(b.id) || bonos[b.id] != null;
             const usado = bonos[b.id] != null;
             return (
-              <div key={b.id} className={'bloque' + (b.secreto ? ' secreto' : '') + (visible ? '' : ' oculto') + (usado ? ' usado' : '')}
+              <div key={b.id} className={'bloque' + (b.secreto ? ' secreto' : '') + (visible ? '' : ' oculto') + (usado ? ' usado' : '') + (golpeado === b.id ? ' golpe' : '')}
                 style={{ left: b.x, top: PISO - b.y - BLOQUE, width: BLOQUE, height: BLOQUE }} aria-hidden="true">
                 {visible ? (usado ? '' : b.secreto ? '★' : '?') : ''}
               </div>
@@ -421,6 +467,16 @@ export const Paseo: React.FC<{
               <svg width={44} height={34} viewBox="0 0 44 34"><ellipse cx={22} cy={20} rx={18} ry={13} fill="#E5484D" stroke="#2A1A10" strokeWidth={3} /><path d="M22 8 V32" stroke="#2A1A10" strokeWidth={2} /><circle cx={30} cy={14} r={4} fill="#fff" /><circle cx={31} cy={14} r={2} fill="#000" /><path d="M8 26 l-5 6 M14 30 l-2 4 M30 30 l2 4 M36 26 l5 6" stroke="#2A1A10" strokeWidth={2.5} strokeLinecap="round" /><path d="M34 9 l6 -6 M30 7 l2 -7" stroke="#2A1A10" strokeWidth={2} strokeLinecap="round" /></svg>
             </div>
           ))}
+          {/* aviso de la puerta: dónde entrar */}
+          {casaCerca && (
+            <div className="aviso-puerta" style={{ left: casaCerca.x - 26, top: PISO - (casaCerca.cap.id === 'reto' ? 300 : 236) }} aria-hidden="true">
+              <kbd>S</kbd><span>▼</span>
+            </div>
+          )}
+          {/* números y efectos que saltan */}
+          {chispas.map((c) => (
+            <span key={c.k} className={'chispa chispa-' + c.tipo} style={{ left: c.x, top: PISO - c.y }} aria-hidden="true">{c.t}</span>
+          ))}
           {/* el jugador */}
           <div ref={jugadorEl} className={'jugador' + (caminando ? ' camina' : '')} aria-hidden="true">
             <Estudiante size={60} gesto={cerca && hecho(cerca) ? 'celebra' : 'normal'} />
@@ -429,7 +485,34 @@ export const Paseo: React.FC<{
 
         </div>
 
-        {/* cartel de la casa cercana: qué se aprende y entrar */}
+        {aviso && <p key={aviso.k} className="aviso-paseo" role="status">{aviso.t}</p>}
+        {cartel && !portada && (
+          <div key={cartel.k} className="cartel-mundo" aria-hidden="true">
+            <small>MUNDO {cartel.zona + 1}</small>
+            <b>{ZONAS[cartel.zona].nombre}</b>
+            <span>{ZONAS[cartel.zona].caps.length} capítulos</span>
+          </div>
+        )}
+        {saliendo && <div className="iris" aria-hidden="true" />}
+        {portada && (
+          <div className="portada-juego" role="dialog" aria-labelledby="t-portada">
+            <p className="pj-sobre">MODO ANALISTA</p>
+            <h2 id="t-portada">El mundo del analista</h2>
+            <p className="pj-texto">Camina por cinco mundos. Cada casa es un capítulo de la clase. Golpea los bloques <b>?</b>, recoge datos y busca el bloque secreto de cada mundo.</p>
+            <div className="pj-teclas" aria-hidden="true">
+              <span><kbd>A</kbd><kbd>D</kbd> caminar</span>
+              <span><kbd>W</kbd> saltar</span>
+              <span><kbd>S</kbd> entrar</span>
+            </div>
+            <button className="btn pj-jugar" onClick={empezar} autoFocus>▶ Jugar</button>
+          </div>
+        )}
+        {bono && <Bono tipo={bono.secreto ? 'secreto' : 'bloque'} caps={bono.caps} titulo={bono.titulo} yaGanado={bonos[bono.id]}
+          alCerrar={() => setBono(null)} alGanar={(n) => { alBono(bono.id, n); chispa(j.current.x, j.current.y + 90, `+${n}`, 'grande'); }} />}
+      </div>
+
+      {/* cartel de la casa cercana: qué se aprende y entrar (fuera del escenario para no tapar el juego en celular) */}
+      <div className="ranura-cartel">
         {casaCerca && !bono && (
           <div className="cartel-capitulo" style={{ ['--c' as string]: `var(--c-${casaCerca.cap.color})` }} role="status">
             <div className="cc-cabeza">
@@ -443,9 +526,7 @@ export const Paseo: React.FC<{
             <button className="btn cc-entrar" onClick={entrar}>{prog.caps[casaCerca.cap.id] ? 'Volver a jugar' : 'Entrar'} <kbd>S</kbd></button>
           </div>
         )}
-        {aviso && <p key={aviso.k} className="aviso-paseo" role="status">{aviso.t}</p>}
-        {bono && <Bono tipo={bono.secreto ? 'secreto' : 'bloque'} caps={bono.caps} titulo={bono.titulo} yaGanado={bonos[bono.id]}
-          alCerrar={() => setBono(null)} alGanar={(n) => alBono(bono.id, n)} />}
+        {!casaCerca && <p className="pista-cartel">Camina hasta una casa para ver qué aprendes en ese capítulo.</p>}
       </div>
 
       {/* controles táctiles */}
