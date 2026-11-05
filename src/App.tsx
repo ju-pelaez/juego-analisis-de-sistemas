@@ -37,7 +37,8 @@ export const App: React.FC = () => {
   useEffect(() => { if (!prog.sonido) callar(); }, [prog.sonido]);
   useEffect(() => { document.documentElement.dataset.tema = prog.tema; }, [prog.tema]);
 
-  const total = Object.values(prog.caps).reduce((s, r) => s + r.puntos, 0);
+  // Puntos: los de cada capítulo más los bonos encontrados en el mapa.
+  const total = Object.values(prog.caps).reduce((s, r) => s + r.puntos, 0) + Object.values(prog.bonus || {}).reduce((s, n) => s + n, 0);
   const hechos = CAPITULOS.filter((c) => prog.caps[c.id]).length;
   const abierto = (k: number) => prog.abiertoTodo || k === 0 || !!prog.caps[CAPITULOS[k - 1].id];
   const enMundo = (prog.vista ?? 'mundo') === 'mundo';
@@ -94,7 +95,7 @@ export const App: React.FC = () => {
           </div>
           <div className="tarjeta">
             <h1>Aprende Análisis de Sistemas jugando</h1>
-            <p className="lead">{CAPITULOS.length} capítulos con la clase completa: el sistema, sus componentes, los diagramas BPMN (como en Bizagi), DFP y DFD, el árbol de problemas, el entorno y la factibilidad. Caminas por la Ciudad del Analista y cada edificio es un capítulo con cinemática, fichas, minijuego e insignia.</p>
+            <p className="lead">{CAPITULOS.length} capítulos con la clase completa: el sistema, sus componentes, los diagramas BPMN (como en Bizagi), DFP y DFD, el árbol de problemas, el entorno y la factibilidad. Recorres cinco mundos vistos desde arriba: cada nivel es un capítulo con cinemática, fichas, minijuego e insignia, y hay casas del reto y cofres escondidos con puntos extra.</p>
             <form onSubmit={(e) => {
               e.preventDefault();
               const nombre = String(new FormData(e.currentTarget).get('nombre') || '').trim().slice(0, 30);
@@ -136,8 +137,9 @@ export const App: React.FC = () => {
           </div>
         </div>
         {enMundo ? (
-          <Mundo caps={CAPITULOS} prog={prog} abierto={abierto}
-            alEntrar={(id) => ir({ v: 'cap', id })} alMover={(id) => setProg((p) => ({ ...p, donde: id }))} />
+          <Mundo caps={CAPITULOS} prog={prog} abierto={abierto} puntos={total}
+            alEntrar={(id) => ir({ v: 'cap', id })} alMover={(pos) => setProg((p) => ({ ...p, pos }))}
+            alBono={(id, n) => setProg((p) => ({ ...p, bonus: { ...(p.bonus || {}), [id]: n } }))} />
         ) : (
         <div className="ruta">
           {CAPITULOS.map((c, k) => {
@@ -187,7 +189,7 @@ export const App: React.FC = () => {
             {prog.abiertoTodo ? 'Volver al orden de la ruta' : 'Modo profe: abrir todos los capítulos'}
           </button>
           <button className="btn fantasma" onClick={() => ir({ v: 'inicio' })}>Cambiar nombre</button>
-          <button className="btn fantasma" onClick={() => { if (confirm('¿Borrar todo el progreso de este aparato?')) setProg((p) => ({ ...p, caps: {} })); }}>Reiniciar progreso</button>
+          <button className="btn fantasma" onClick={() => { if (confirm('¿Borrar todo el progreso de este aparato?')) setProg((p) => ({ ...p, caps: {}, bonus: {}, pos: undefined })); }}>Reiniciar progreso</button>
         </div>
         <Creditos />
       </main>

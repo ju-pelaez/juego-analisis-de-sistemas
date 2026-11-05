@@ -9,7 +9,8 @@ export type Progreso = {
   sonido: boolean;
   tema: 'oscuro' | 'claro';
   abiertoTodo: boolean; // la profe puede abrir todos los capítulos
-  donde?: string;       // capítulo donde quedó el jugador en el mapa
+  pos?: string;         // dónde quedó el jugador en el mapa: «mundo:fila:columna»
+  bonus?: Record<string, number>; // bonos del mapa ya ganados (casas del reto y cofres) y sus puntos
   vista?: 'mundo' | 'lista';
 };
 
