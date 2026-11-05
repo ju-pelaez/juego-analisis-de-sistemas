@@ -43,6 +43,8 @@ export type Juego =
   | { tipo: 'lupa'; titulo: string; pista: string; items: { t: string; sel: boolean; por: string }[] }
   | { tipo: 'cubetas'; titulo: string; cubetas: { id: string; n: string; c: Comp }[]; items: { t: string; b: string; por: string }[] }
   | { tipo: 'bpmn'; titulo: string }
+  | { tipo: 'dfp'; titulo: string }
+  | { tipo: 'dfd'; titulo: string }
   | { tipo: 'final' };
 
 export type Capitulo = {
@@ -445,7 +447,119 @@ export const CAPITULOS: Capitulo[] = [
   },
 
   {
-    id: 'control', n: 7, color: 'con', caso: 'Transporte urbano',
+    id: 'dfp', n: 7, color: 'pro', caso: 'Atender un pedido en la cafetería',
+    titulo: 'Diagrama de flujo de procesos', sub: 'DFP: los pasos y las decisiones en orden',
+    lema: 'Un diagrama de flujo dice qué se hace, en qué orden y qué se decide.',
+    insignia: 'Trazador de flujos',
+    dice: 'Ahora dibujamos el paso a paso de un proceso, con sus decisiones: eso es un diagrama de flujo de procesos.',
+    fichas: [
+      {
+        titulo: 'DFP = el paso a paso dibujado', concepto: true,
+        texto: 'El diagrama de flujo de procesos (DFP) dibuja cómo se hace algo: dónde empieza, qué se hace, qué se pregunta, qué se decide y dónde termina.',
+        frase: 'Se lee siguiendo las flechas, de arriba hacia abajo.',
+      },
+      {
+        titulo: 'Los símbolos del diagrama de flujo',
+        filas: [
+          ['Inicio o fin', 'Óvalo: dónde empieza y dónde termina el proceso.', 'efe'],
+          ['Proceso', 'Rectángulo: una acción o tarea que se hace.', 'pro'],
+          ['Decisión', 'Rombo: una pregunta con dos salidas, sí o no.', 'sis'],
+          ['Entrada o salida de datos', 'Paralelogramo: un dato que entra o que sale.', 'dat'],
+          ['Documento', 'Rectángulo con base ondulada: un papel, recibo o reporte.', 'act'],
+          ['Línea de flujo', 'Flecha: el orden en que van los pasos.', 'con'],
+        ],
+      },
+      {
+        titulo: 'Ejemplo: atender un pedido en la cafetería',
+        flujo: ['Inicio', 'Recibir el pedido', '¿Hay el producto?', 'Cobrar el pedido', 'Entregar el recibo', 'Entregar el pedido', 'Fin'],
+        frase: 'Si no hay el producto, se ofrece otro y se vuelve a preguntar.',
+      },
+      {
+        titulo: 'La decisión abre dos caminos',
+        texto: 'Del rombo salen dos flechas: una dice «Sí» y la otra «No». Cada camino sigue su propio paso, y a veces uno vuelve atrás para repetir la pregunta.',
+        dos: {
+          si: ['Camino del Sí', 'Hay el producto: se cobra y se entrega.'],
+          no: ['Camino del No', 'No hay el producto: se ofrece otro y se vuelve a preguntar.'],
+        },
+      },
+      {
+        titulo: 'DFP, BPMN o DFD: ¿cuál uso?',
+        filas: [
+          ['DFP', 'Muestra el orden de los pasos y las decisiones.', 'pro'],
+          ['BPMN', 'Muestra quién hace cada tarea, con sus carriles.', 'efe'],
+          ['DFD', 'Muestra cómo se mueven y se guardan los datos.', 'dat'],
+        ],
+        frase: 'Los tres miran el mismo sistema desde lados distintos.',
+      },
+    ],
+    juego: { tipo: 'dfp', titulo: 'Arma el diagrama de flujo del pedido' },
+    preguntas: [
+      { q: 'En un diagrama de flujo, ¿qué símbolo es una decisión?', ok: 'El rombo', mal: ['El óvalo', 'El rectángulo', 'El paralelogramo'], por: 'El rombo hace una pregunta con dos salidas: sí o no.' },
+      { q: '¿Qué indica el óvalo?', ok: 'Dónde empieza o termina el proceso', mal: ['Una tarea', 'Un dato que entra', 'Un documento'], por: 'Inicio y fin van en óvalos.' },
+      { q: '¿Qué muestra un DFP que no muestra un DFD?', ok: 'El orden de los pasos y las decisiones', mal: ['Dónde se guardan los datos', 'Las entidades externas', 'Nada, son iguales'], por: 'El DFP sigue el orden; el DFD sigue los datos.' },
+    ],
+  },
+
+  {
+    id: 'dfd', n: 8, color: 'dat', caso: 'Pedido en una tienda en línea',
+    titulo: 'Diagrama de flujo de datos', sub: 'DFD: de dónde vienen y a dónde van los datos',
+    lema: 'En un DFD los datos siempre pasan por un proceso.',
+    insignia: 'Rastreador de datos',
+    dice: 'Ahora seguimos a los datos: de dónde vienen, quién los transforma, dónde se guardan y a dónde van.',
+    fichas: [
+      {
+        titulo: 'DFD = el camino de los datos', concepto: true,
+        texto: 'El diagrama de flujo de datos (DFD) muestra de dónde vienen los datos, qué procesos los transforman, dónde se guardan y a dónde van. No muestra el orden ni las decisiones: muestra los datos en movimiento.',
+        frase: 'Pregunta del DFD: ¿qué datos entran, se transforman, se guardan y salen?',
+      },
+      {
+        titulo: 'Los cuatro símbolos del DFD',
+        filas: [
+          ['Entidad externa', 'Rectángulo: una persona u organización de afuera que da o recibe datos.', 'act'],
+          ['Proceso', 'Círculo con número: transforma los datos.', 'pro'],
+          ['Almacén de datos', 'Rectángulo abierto: donde los datos se guardan.', 'dat'],
+          ['Flujo de datos', 'Flecha con nombre: el dato que se mueve.', 'sis'],
+        ],
+      },
+      {
+        titulo: 'Un DFD tiene niveles',
+        filas: [
+          ['Diagrama de contexto', 'Nivel 0: todo el sistema es un solo proceso, rodeado de sus entidades externas.', 'dat'],
+          ['Nivel 1', 'Ese proceso se abre en sus procesos principales, con sus almacenes.', 'dat'],
+          ['Nivel 2', 'Cada proceso se puede abrir otra vez, con más detalle.', 'dat'],
+        ],
+        frase: 'Se va del todo a las partes, como con una lupa.',
+      },
+      {
+        titulo: 'Las reglas de oro del DFD',
+        filas: [
+          ['Siempre por un proceso', 'Los datos no pasan de una entidad a otra, ni a un almacén, sin un proceso en medio.', 'pro'],
+          ['Almacén con almacén', 'Prohibido: los datos no saltan solos de un almacén a otro.', 'dat'],
+          ['Flecha con nombre', 'El nombre dice qué dato viaja: datos del pedido, pago confirmado.', 'sis'],
+          ['Proceso con verbo', 'Recibir el pedido, verificar el pago, despachar.', 'pro'],
+        ],
+      },
+      {
+        titulo: 'Ejemplo: el pedido de la tienda en línea',
+        filas: [
+          ['Cliente → Recibir pedido', 'Viajan los datos del pedido.', 'act'],
+          ['Productos → Recibir pedido', 'Viajan el precio y las existencias.', 'dat'],
+          ['Recibir pedido → Pedidos', 'Se guarda el pedido registrado.', 'dat'],
+          ['Verificar pago ↔ Banco', 'Sale la solicitud de cobro y vuelve el pago confirmado.', 'act'],
+          ['Despachar → Transportadora', 'Sale la guía de envío.', 'act'],
+        ],
+      },
+    ],
+    juego: { tipo: 'dfd', titulo: 'Arma el DFD del pedido en línea' },
+    preguntas: [
+      { q: 'En un DFD, ¿qué es el Cliente que hace un pedido?', ok: 'Una entidad externa', mal: ['Un proceso', 'Un almacén de datos', 'Un flujo de datos'], por: 'Está afuera del sistema y le entrega datos.' },
+      { q: '¿Cuál de estos flujos está PROHIBIDO en un DFD?', ok: 'Del Cliente directo al Banco', mal: ['Del Cliente al proceso Recibir pedido', 'Del proceso al almacén Pedidos', 'Del almacén Productos al proceso'], por: 'Entre dos entidades siempre debe haber un proceso.' },
+      { q: '¿Qué es el diagrama de contexto?', ok: 'El nivel 0: todo el sistema como un solo proceso con sus entidades', mal: ['El nivel con más detalle', 'Un diagrama de carriles', 'La lista de datos'], por: 'Después se abre en el nivel 1 y el nivel 2.' },
+    ],
+  },
+
+  {
+    id: 'control', n: 9, color: 'con', caso: 'Transporte urbano',
     titulo: 'Mecanismos de control', sub: '¿Cómo se evalúa el sistema?',
     lema: 'Medir, evaluar y corregir: así aprende un sistema.',
     insignia: 'Guardián del lazo',
@@ -495,7 +609,7 @@ export const CAPITULOS: Capitulo[] = [
   },
 
   {
-    id: 'arbol', n: 8, color: 'efe', caso: 'Citas del consultorio médico',
+    id: 'arbol', n: 10, color: 'efe', caso: 'Citas del consultorio médico',
     titulo: 'Árbol de problemas', sub: 'Raíces, tronco y copa',
     lema: 'Porque pasa esto, ocurre esto, y eso genera esto.',
     insignia: 'Jardinero del problema',
@@ -562,7 +676,7 @@ export const CAPITULOS: Capitulo[] = [
   },
 
   {
-    id: 'entorno', n: 9, color: 'env', caso: 'Tienda en línea',
+    id: 'entorno', n: 11, color: 'env', caso: 'Tienda en línea',
     titulo: 'El entorno', sub: 'Lo que condiciona pero no se controla',
     lema: 'El entorno condiciona al sistema, pero no se controla desde él.',
     insignia: 'Vigía del entorno',
@@ -612,9 +726,9 @@ export const CAPITULOS: Capitulo[] = [
   },
 
   {
-    id: 'factibilidad', n: 10, color: 'dat', caso: 'Propuesta: agenda compartida del consultorio',
+    id: 'factibilidad', n: 12, color: 'dat', caso: 'Propuesta: agenda compartida del consultorio',
     titulo: 'Factibilidad y viabilidad', sub: '¿Se puede hacer? ¿Vale la pena?',
-    lema: 'Factible: se puede. Viable: conviene y dura.',
+    lema: 'Factible: se puede hacer. Viable: conviene y se sostiene.',
     insignia: 'Juez de propuestas',
     dice: 'Ahora sí miramos la propuesta: ¿se puede hacer? ¿vale la pena?',
     fichas: [
@@ -624,7 +738,7 @@ export const CAPITULOS: Capitulo[] = [
           ['Factibilidad', '¿Se PUEDE hacer con los recursos, la tecnología, las personas y las leyes que hay?', 'dat'],
           ['Viabilidad', '¿VALE LA PENA y se SOSTIENE en el tiempo? ¿Hay necesidad real, es el momento, tiene impacto?', 'act'],
         ],
-        frase: 'Truco: factible = se puede · viable = conviene y dura.',
+        frase: 'Truco: factible = se puede hacer · viable = conviene y se sostiene.',
       },
       {
         titulo: 'La factibilidad se revisa en cuatro partes',
@@ -647,9 +761,9 @@ export const CAPITULOS: Capitulo[] = [
       {
         titulo: 'Y la viabilidad',
         filas: [
-          ['Necesidad real', 'Los pacientes esperan semanas.', 'efe'],
-          ['Se sostiene', 'Alguien la mantiene al día dentro de 3 años.', 'efe'],
-          ['Riesgos', 'Que nadie la actualice o que la gente no confíe.', 'efe'],
+          ['Necesidad real', 'Los pacientes esperan semanas por una cita.', 'efe'],
+          ['Impacto', 'Menos citas perdidas y pacientes mejor atendidos.', 'efe'],
+          ['Se sostiene', 'Alguien la mantiene al día con el paso del tiempo.', 'efe'],
         ],
       },
     ],
@@ -677,13 +791,13 @@ export const CAPITULOS: Capitulo[] = [
     },
     preguntas: [
       { q: '¿Qué pregunta la factibilidad?', ok: '¿Se puede hacer con los recursos, la tecnología, las personas y las leyes que hay?', mal: ['¿Quién tiene la culpa del problema?', '¿Cuál es el efecto final?', '¿Dónde va el entorno?'], por: 'Factible = se puede hacer.' },
-      { q: '¿Qué pregunta la viabilidad?', ok: '¿Vale la pena y se sostiene en el tiempo?', mal: ['¿Cuántos actores hay?', '¿Qué dato falta?', '¿Cómo se lee el árbol?'], por: 'Viable = conviene y dura.' },
+      { q: '¿Qué pregunta la viabilidad?', ok: '¿Vale la pena y se sostiene en el tiempo?', mal: ['¿Cuántos actores hay?', '¿Qué dato falta?', '¿Cómo se lee el árbol?'], por: 'Viable = conviene y se sostiene.' },
       { q: '"¿La gente lo usaría y lo podría manejar?" es factibilidad…', ok: 'Operativa', mal: ['Técnica', 'Económica', 'Legal'], por: 'Operativa mira a las personas que lo van a usar.' },
     ],
   },
 
   {
-    id: 'reto', n: 11, color: 'sis', caso: 'Un caso nuevo, al azar',
+    id: 'reto', n: 13, color: 'sis', caso: 'Un caso nuevo, al azar',
     titulo: 'Reto final', sub: 'Un caso nuevo y tu certificado',
     lema: 'Ya piensas como analista. Demuéstralo.',
     insignia: 'Analista certificado',

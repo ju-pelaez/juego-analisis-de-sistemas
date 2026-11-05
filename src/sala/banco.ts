@@ -11,7 +11,8 @@ export type PreguntaSala = { t: string; ops: string[]; ok: number; por: string; 
 export const TEMAS_SALA = [
   { id: 'todo', n: 'Toda la clase', caps: [] as string[] },
   { id: 'fundamentos', n: 'El analista y el sistema', caps: ['bienvenida', 'sistema', 'modelo'] },
-  { id: 'componentes', n: 'Actores, datos, procesos, BPMN y control', caps: ['actores', 'datos', 'procesos', 'bpmn', 'control'] },
+  { id: 'componentes', n: 'Actores, datos, procesos y control', caps: ['actores', 'datos', 'procesos', 'control'] },
+  { id: 'diagramas', n: 'Diagramas: BPMN, DFP y DFD', caps: ['bpmn', 'dfp', 'dfd'] },
   { id: 'arbol', n: 'Árbol de problemas, entorno y factibilidad', caps: ['arbol', 'entorno', 'factibilidad'] },
 ];
 

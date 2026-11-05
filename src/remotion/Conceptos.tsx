@@ -342,7 +342,7 @@ const Factibilidad: React.FC = () => {
       })}
       <g style={{ translate: `0px ${(1 - cae) * -300}px`, opacity: cae }}>
         <rect x="130" y="250" width="740" height="60" rx="16" style={{ fill: col('efe') }} />
-        <text x="500" y="292" textAnchor="middle" style={{ ...txt(32), fill: 'var(--fondo)' }}>VIABLE: conviene y dura</text>
+        <text x="500" y="292" textAnchor="middle" style={{ ...txt(32), fill: 'var(--fondo)' }}>VIABLE: conviene y se sostiene</text>
       </g>
       <text x="500" y="120" textAnchor="middle" style={{ ...txt(40), opacity: ap(f, 0, 15) }}>¿Se puede hacer? ¿Vale la pena?</text>
     </Lienzo>
@@ -352,7 +352,7 @@ const Factibilidad: React.FC = () => {
 // 10 · Todos los capítulos giran y se juntan en un sello de analista.
 const Reto: React.FC = () => {
   const f = useCurrentFrame();
-  const ids = ['sistema', 'modelo', 'actores', 'datos', 'procesos', 'bpmn', 'control', 'arbol', 'entorno', 'factibilidad'];
+  const ids = ['sistema', 'modelo', 'actores', 'datos', 'procesos', 'bpmn', 'dfp', 'dfd', 'control', 'arbol', 'entorno', 'factibilidad'];
   const junta = ap(f, 60, 95);
   return (
     <Lienzo>
@@ -413,9 +413,136 @@ const Bpmn: React.FC = () => {
   );
 };
 
+// Punta de flecha reutilizable (cada animación le da su propio id).
+const Punta: React.FC<{ id: string; color: string }> = ({ id, color }) => (
+  <defs>
+    <marker id={id} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style={{ fill: color }} />
+    </marker>
+  </defs>
+);
+
+// 7 · Diagrama de flujo: las formas se arman en orden y una ficha recorre el camino;
+//     en el rombo se divide: por el Sí sigue hasta el fin, por el No ofrece otro y vuelve a preguntar.
+const Dfp: React.FC = () => {
+  const f = useCurrentFrame();
+  const Y = 290;
+  const formas = [
+    { x: 75, w: 60, t: 'Inicio', c: 'efe', d: (x: number, w: number) => `M${x - w + 32} ${Y - 32} H${x + w - 32} A32 32 0 0 1 ${x + w - 32} ${Y + 32} H${x - w + 32} A32 32 0 0 1 ${x - w + 32} ${Y - 32} Z` },
+    { x: 240, w: 80, t: 'Pedido', c: 'dat', d: (x: number, w: number) => `M${x - w + 20} ${Y - 34} H${x + w} L${x + w - 20} ${Y + 34} H${x - w} Z` },
+    { x: 410, w: 66, t: '¿Hay?', c: 'sis', d: (x: number, w: number) => `M${x} ${Y - 62} L${x + w} ${Y} L${x} ${Y + 62} L${x - w} ${Y} Z` },
+    { x: 580, w: 75, t: 'Cobrar', c: 'pro', d: (x: number, w: number) => `M${x - w} ${Y - 34} H${x + w} V${Y + 34} H${x - w} Z` },
+    { x: 750, w: 75, t: 'Recibo', c: 'act', d: (x: number, w: number) => `M${x - w} ${Y - 34} H${x + w} V${Y + 26} Q${x + w / 2} ${Y + 10} ${x} ${Y + 26} T${x - w} ${Y + 26} Z` },
+    { x: 920, w: 56, t: 'Fin', c: 'efe', d: (x: number, w: number) => `M${x - w + 32} ${Y - 32} H${x + w - 32} A32 32 0 0 1 ${x + w - 32} ${Y + 32} H${x - w + 32} A32 32 0 0 1 ${x - w + 32} ${Y - 32} Z` },
+  ];
+  // La ficha recorre la fila de arriba; en el rombo espera la decisión.
+  const fx = interpolate(f, [52, 74, 86, 120], [75, 410, 410, 920], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  // Una segunda ficha toma el camino del No y vuelve al rombo.
+  const t2 = ap(f, 86, 118);
+  const no = t2 < 0.5 ? { x: 410, y: 352 + (t2 / 0.5) * 120 } : { x: 410 - Math.sin((t2 - 0.5) * Math.PI) * 140, y: 472 - ((t2 - 0.5) / 0.5) * 120 };
+  return (
+    <Lienzo>
+      <Punta id="pt-dfp" color="var(--tinta)" />
+      <text x="500" y="90" textAnchor="middle" style={{ ...txt(38), opacity: ap(f, 0, 14) }}>Paso a paso, con sus decisiones</text>
+      {formas.slice(0, -1).map((a, i) => {
+        const b = formas[i + 1];
+        return (
+          <path key={i} d={`M${a.x + a.w + 4} ${Y} L${b.x - b.w - 6} ${Y}`} pathLength={1} markerEnd="url(#pt-dfp)"
+            style={{ fill: 'none', stroke: 'var(--tinta)', strokeWidth: 5, strokeDasharray: 1, strokeDashoffset: 1 - ap(f, 8 + i * 7, 16 + i * 7) }} />
+        );
+      })}
+      {formas.map((a, i) => (
+        <g key={a.t} style={{ opacity: ap(f, i * 7, i * 7 + 8), transformOrigin: `${a.x}px ${Y}px`, scale: String(0.7 + 0.3 * resorte(f, i * 7, 18)) }}>
+          <path d={a.d(a.x, a.w)} style={{ fill: `color-mix(in srgb, ${col(a.c)} ${Math.abs(fx - a.x) < 40 ? 45 : 22}%, var(--panel))`, stroke: col(a.c), strokeWidth: 5 }} />
+          <text x={a.x} y={Y + 9} textAnchor="middle" style={txt(a.t.length > 5 ? 24 : 26)}>{a.t}</text>
+        </g>
+      ))}
+      {/* camino del No: baja, ofrece otro y vuelve a preguntar */}
+      <g style={{ opacity: ap(f, 44, 56) }}>
+        <path d={`M410 ${Y + 64} V438`} markerEnd="url(#pt-dfp)" style={{ fill: 'none', stroke: 'var(--tinta)', strokeWidth: 5 }} />
+        <rect x="320" y="444" width="180" height="62" rx="6" style={{ fill: 'color-mix(in srgb, var(--c-pro) 22%, var(--panel))', stroke: col('pro'), strokeWidth: 5 }} />
+        <text x="410" y="484" textAnchor="middle" style={txt(24)}>Ofrecer otro</text>
+        <path d="M320 475 C 240 475, 300 330, 350 318" markerEnd="url(#pt-dfp)" style={{ fill: 'none', stroke: 'var(--tinta)', strokeWidth: 4, strokeDasharray: '10 8' }} />
+        <text x="426" y="402" style={{ ...txt(24), fill: col('act') }}>No</text>
+        <text x="482" y="276" style={{ ...txt(24), fill: col('efe') }}>Sí</text>
+      </g>
+      {f >= 52 && <circle cx={fx} cy={Y - 92} r={15} style={{ fill: col('sis') }} />}
+      {f >= 52 && <path d={`M${fx} ${Y - 76} L${fx} ${Y - 70}`} style={{ stroke: col('sis'), strokeWidth: 4 }} />}
+      {f >= 86 && f < 120 && <circle cx={no.x} cy={no.y} r={13} style={{ fill: col('act') }} />}
+      <text x="500" y="620" textAnchor="middle" style={{ ...txt(34, 600), opacity: ap(f, 100, 114) }}>Óvalo · Rectángulo · Rombo · Flechas</text>
+    </Lienzo>
+  );
+};
+
+// 8 · DFD: los datos salen del cliente, pasan por el proceso, se guardan y siguen al banco.
+//     Al final aparece la regla de oro: entre dos entidades, sin proceso, no.
+const Dfd: React.FC = () => {
+  const f = useCurrentFrame();
+  // Paquete de datos que viaja de (x1,y1) a (x2,y2) entre los cuadros a y b, y se repite.
+  const paquete = (x1: number, y1: number, x2: number, y2: number, a: number, t: string, c: string) => {
+    const ciclo = f < a ? -1 : ((f - a) % 50) / 30;
+    if (ciclo < 0 || ciclo > 1) return null;
+    const x = x1 + (x2 - x1) * ciclo, y = y1 + (y2 - y1) * ciclo;
+    return (
+      <g style={{ opacity: Math.min(1, ciclo * 6, (1 - ciclo) * 6) }}>
+        <rect x={x - 58} y={y - 20} width={116} height={40} rx={20} style={{ fill: col(c) }} />
+        <text x={x} y={y + 8} textAnchor="middle" style={{ ...txt(21), fill: 'var(--fondo)' }}>{t}</text>
+      </g>
+    );
+  };
+  const flecha = (d: string, a: number) => (
+    <path d={d} pathLength={1} markerEnd="url(#pt-dfd)" style={{ fill: 'none', stroke: col('sis'), strokeWidth: 5, strokeDasharray: 1, strokeDashoffset: 1 - ap(f, a, a + 12) }} />
+  );
+  const prohibido = ap(f, 92, 104);
+  return (
+    <Lienzo>
+      <Punta id="pt-dfd" color="var(--c-sis)" />
+      <text x="500" y="76" textAnchor="middle" style={{ ...txt(36), opacity: ap(f, 0, 14) }}>¿De dónde vienen los datos? ¿A dónde van?</text>
+      {/* entidad externa: el cliente */}
+      <g style={{ opacity: ap(f, 4, 14) }}>
+        <rect x="40" y="300" width="200" height="90" rx="4" style={{ fill: 'color-mix(in srgb, var(--c-act) 22%, var(--panel))', stroke: col('act'), strokeWidth: 5 }} />
+        <text x="140" y="356" textAnchor="middle" style={txt(32)}>Cliente</text>
+      </g>
+      {/* proceso: la burbuja */}
+      <g style={{ transformOrigin: '500px 345px', scale: String(resorte(f, 10, 22)) }}>
+        <circle cx="500" cy="345" r="108" style={{ fill: 'color-mix(in srgb, var(--c-pro) 24%, var(--panel))', stroke: col('pro'), strokeWidth: 6 }} />
+        <text x="500" y="312" textAnchor="middle" style={{ ...txt(34), fill: col('pro') }}>1</text>
+        <text x="500" y="356" textAnchor="middle" style={txt(28)}>Recibir</text>
+        <text x="500" y="390" textAnchor="middle" style={txt(28)}>pedido</text>
+      </g>
+      {/* almacén de datos */}
+      <g style={{ opacity: ap(f, 18, 28) }}>
+        <rect x="720" y="160" width="250" height="72" style={{ fill: 'color-mix(in srgb, var(--c-dat) 22%, var(--panel))' }} />
+        <path d="M970 160 H720 V232 H970" style={{ fill: 'none', stroke: col('dat'), strokeWidth: 5 }} />
+        <line x1="782" y1="160" x2="782" y2="232" style={{ stroke: col('dat'), strokeWidth: 5 }} />
+        <text x="751" y="206" textAnchor="middle" style={txt(26)}>D1</text>
+        <text x="872" y="206" textAnchor="middle" style={txt(28)}>Pedidos</text>
+      </g>
+      {/* entidad externa: el banco */}
+      <g style={{ opacity: ap(f, 24, 34) }}>
+        <rect x="740" y="470" width="200" height="90" rx="4" style={{ fill: 'color-mix(in srgb, var(--c-act) 22%, var(--panel))', stroke: col('act'), strokeWidth: 5 }} />
+        <text x="840" y="526" textAnchor="middle" style={txt(32)}>Banco</text>
+      </g>
+      {flecha('M244 345 L384 345', 22)}
+      {flecha('M598 296 L712 222', 30)}
+      {flecha('M600 400 L734 488', 36)}
+      {paquete(244, 345, 384, 345, 40, 'pedido', 'act')}
+      {paquete(598, 296, 712, 222, 58, 'registro', 'dat')}
+      {paquete(600, 400, 734, 488, 72, 'cobro', 'sis')}
+      {/* la regla: de entidad a entidad, sin proceso, está prohibido */}
+      <g style={{ opacity: prohibido }}>
+        <path d="M140 394 Q 330 640 736 540" style={{ fill: 'none', stroke: 'var(--mal)', strokeWidth: 5, strokeDasharray: '14 10' }} />
+        <circle cx="330" cy="545" r="30" style={{ fill: 'var(--mal)', transformOrigin: '330px 545px', scale: String(resorte(f, 98, 16)) }} />
+        <path d="M318 533 L342 557 M342 533 L318 557" style={{ stroke: 'var(--fondo)', strokeWidth: 6, strokeLinecap: 'round' }} />
+      </g>
+      <text x="500" y="655" textAnchor="middle" style={{ ...txt(34), opacity: ap(f, 102, 116) }}>Los datos siempre pasan por un proceso</text>
+    </Lienzo>
+  );
+};
+
 const MAPA: Record<string, React.FC> = {
   bienvenida: Bienvenida, sistema: Sistema, modelo: Modelo, actores: Actores, datos: Datos,
-  procesos: Procesos, bpmn: Bpmn, control: Control, arbol: Arbol, entorno: Entorno, factibilidad: Factibilidad, reto: Reto,
+  procesos: Procesos, bpmn: Bpmn, dfp: Dfp, dfd: Dfd, control: Control, arbol: Arbol, entorno: Entorno, factibilidad: Factibilidad, reto: Reto,
 };
 
 export const Concepto: React.FC<{ id: string }> = ({ id }) => {

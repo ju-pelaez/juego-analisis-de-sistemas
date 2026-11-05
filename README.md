@@ -6,7 +6,8 @@ Juego web para aprender **Análisis de Sistemas** capítulo por capítulo.
 
 ## Qué trae
 
-- 12 capítulos: qué hace un analista, el sistema, entrada-proceso-salida y control, actores, datos, procesos, modelado de procesos con BPMN (como en Bizagi), mecanismos de control, árbol de problemas, entorno, factibilidad y viabilidad, y un reto final con certificado.
+- **La Ciudad del Analista:** el inicio es un mundo para caminar. Cada capítulo es un edificio; el jugador camina hasta él y entra. Los barrios agrupan los temas y la profe espera en el próximo capítulo.
+- 14 capítulos: qué hace un analista, el sistema, entrada-proceso-salida y control, actores, datos, procesos, modelado de procesos con BPMN (como en Bizagi), diagrama de flujo de procesos (DFP), diagrama de flujo de datos (DFD), mecanismos de control, árbol de problemas, entorno, factibilidad y viabilidad, y un reto final con certificado.
 - Cada capítulo tiene una cinemática, fichas cortas, un minijuego distinto, preguntas de control y una insignia.
 - La profe Ruth Dary es la guía que explica cada tema.
 - **Sala en vivo:** el proyector muestra un QR, todo el salón entra desde el celular, responde en equipos (Actores, Datos, Procesos y Control), chatea y manda emoticones.

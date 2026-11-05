@@ -24,7 +24,7 @@ function armar(caso: CasoFinal): Paso[] {
   barajar(caso.piezas).forEach((p) => pasos.push({ ronda: 2, titulo: 'Ronda 2 · Causa, efecto o entorno', texto: p.t, ops: ZONAS, ok: p.zona, por: POR[p.zona] }));
   const COMP = (Object.keys(COMPONENTES) as (keyof typeof COMPONENTES)[]).map((k) => ({ id: k, n: COMPONENTES[k].n }));
   barajar(caso.causas).forEach((c) => pasos.push({ ronda: 3, titulo: 'Ronda 3 · ¿Qué componente falla?', texto: c.t, ops: COMP, ok: c.comp, por: `${COMPONENTES[c.comp].n}: ${COMPONENTES[c.comp].q}` }));
-  caso.estudios.forEach((e) => pasos.push({ ronda: 4, titulo: 'Ronda 4 · Factibilidad', texto: e.t, ops: ESTUDIOS.map((x) => ({ id: x.id, n: x.n })), ok: e.b, por: 'Técnica = datos y tecnología · Operativa = la gente · Económica = costo · Legal = la ley · Viabilidad = vale la pena y dura.' }));
+  caso.estudios.forEach((e) => pasos.push({ ronda: 4, titulo: 'Ronda 4 · Factibilidad', texto: e.t, ops: ESTUDIOS.map((x) => ({ id: x.id, n: x.n })), ok: e.b, por: 'Técnica = datos y tecnología · Operativa = la gente · Económica = costo · Legal = la ley · Viabilidad = vale la pena y se sostiene.' }));
   return pasos;
 }
 

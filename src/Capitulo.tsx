@@ -26,6 +26,8 @@ import { Lupa } from './juegos/Lupa';
 import { Cubetas } from './juegos/Cubetas';
 import { RetoFinal } from './juegos/RetoFinal';
 import { BpmnJuego } from './juegos/BpmnJuego';
+import { DfpJuego } from './juegos/DfpJuego';
+import { DfdJuego } from './juegos/DfdJuego';
 
 type Fase = 'cine' | 'fichas' | 'juego' | 'preguntas' | 'fin';
 const FASES: { id: Fase; n: string }[] = [
@@ -121,6 +123,8 @@ export const Capitulo: React.FC<{
       case 'lupa': return <Lupa juego={j} alTerminar={finJuego} />;
       case 'cubetas': return <Cubetas juego={j} alTerminar={finJuego} />;
       case 'bpmn': return <BpmnJuego juego={j} alTerminar={finJuego} />;
+      case 'dfp': return <DfpJuego juego={j} alTerminar={finJuego} />;
+      case 'dfd': return <DfdJuego juego={j} alTerminar={finJuego} />;
       case 'final': return <RetoFinal alTerminar={(a, t, c) => { setCaso(c); finJuego(a, t); }} />;
     }
   };

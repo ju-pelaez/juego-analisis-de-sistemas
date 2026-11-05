@@ -60,6 +60,23 @@ const T: Record<string, React.ReactNode> = {
       <path d="M13 10h5M28 16v10M20 34H13" fill="none" strokeWidth="2.5" />
     </>
   ),
+  dfp: (
+    <>
+      <rect x="14" y="3" width="20" height="9" rx="4.5" fill="none" strokeWidth="3" />
+      <path d="M24 12v5M24 31v5" strokeWidth="2.5" />
+      <path d="M24 17l7 7-7 7-7-7z" fill="none" strokeWidth="3" strokeLinejoin="round" />
+      <rect x="14" y="36" width="20" height="9" rx="2" fill="none" strokeWidth="3" />
+      <path d="M31 24h9v-9" fill="none" strokeWidth="2.5" />
+    </>
+  ),
+  dfd: (
+    <>
+      <rect x="2" y="6" width="14" height="11" rx="1" fill="none" strokeWidth="3" />
+      <circle cx="31" cy="24" r="9" fill="none" strokeWidth="3" />
+      <path d="M16 12l8 6M30 33v7" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M44 40H22v6h22" fill="none" strokeWidth="3" />
+    </>
+  ),
   control: (
     <>
       <path d="M38 17A16 16 0 1 0 40 28" fill="none" strokeWidth="3.5" strokeLinecap="round" />

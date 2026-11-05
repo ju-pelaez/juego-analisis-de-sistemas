@@ -27,7 +27,7 @@ export const Cubetas: React.FC<{ juego: J; alTerminar: (a: number, t: number) =>
       vibrar(60);
       setFallo(true);
       setTiembla((n) => n + 1);
-      setAviso({ ok: false, texto: `No es ${nombre(id).toLowerCase()}.`, por: 'Recuerda: técnica = datos y tecnología · operativa = la gente · económica = costo · legal = la ley · viabilidad = vale la pena y dura.' });
+      setAviso({ ok: false, texto: `No es ${nombre(id).toLowerCase()}.`, por: 'Recuerda: técnica = datos y tecnología · operativa = la gente · económica = costo · legal = la ley · viabilidad = vale la pena y se sostiene.' });
       return;
     }
     const nuevos = aciertos + (fallo ? 0 : 1);

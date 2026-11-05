@@ -9,6 +9,8 @@ export type Progreso = {
   sonido: boolean;
   tema: 'oscuro' | 'claro';
   abiertoTodo: boolean; // la profe puede abrir todos los capítulos
+  donde?: string;       // capítulo donde quedó el jugador en el mapa
+  vista?: 'mundo' | 'lista';
 };
 
 const CLAVE = 'modo-analista-v1';

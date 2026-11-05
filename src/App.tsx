@@ -10,6 +10,7 @@ import { Video } from './componentes/Video';
 import { Glifo } from './componentes/Glifo';
 import { Estrellas } from './componentes/Piezas';
 import { DURACION_PORTADA, Portada } from './remotion/Extras';
+import { Mundo } from './mundo/Mundo';
 // La sala en vivo (con el cliente de mensajes) se carga solo cuando se abre.
 const Sala = lazy(() => import('./sala/Sala').then((m) => ({ default: m.Sala })));
 
@@ -39,6 +40,7 @@ export const App: React.FC = () => {
   const total = Object.values(prog.caps).reduce((s, r) => s + r.puntos, 0);
   const hechos = CAPITULOS.filter((c) => prog.caps[c.id]).length;
   const abierto = (k: number) => prog.abiertoTodo || k === 0 || !!prog.caps[CAPITULOS[k - 1].id];
+  const enMundo = (prog.vista ?? 'mundo') === 'mundo';
   const ir = (v: Vista) => { callar(); setVista(v); window.scrollTo({ top: 0 }); };
 
   const guardar = (id: string, r: ResultadoCap) =>
@@ -92,7 +94,7 @@ export const App: React.FC = () => {
           </div>
           <div className="tarjeta">
             <h1>Aprende Análisis de Sistemas jugando</h1>
-            <p className="lead">12 capítulos con la clase completa: el sistema, sus componentes, los procesos en BPMN (como en Bizagi), el árbol de problemas, el entorno y la factibilidad. Cada capítulo trae una cinemática, fichas cortas, un minijuego distinto y su insignia.</p>
+            <p className="lead">{CAPITULOS.length} capítulos con la clase completa: el sistema, sus componentes, los diagramas BPMN (como en Bizagi), DFP y DFD, el árbol de problemas, el entorno y la factibilidad. Caminas por la Ciudad del Analista y cada edificio es un capítulo con cinemática, fichas, minijuego e insignia.</p>
             <form onSubmit={(e) => {
               e.preventDefault();
               const nombre = String(new FormData(e.currentTarget).get('nombre') || '').trim().slice(0, 30);
@@ -129,8 +131,14 @@ export const App: React.FC = () => {
           <div className="medidor">
             <span className="chip-puntos"><b>{hechos}</b>/{CAPITULOS.length} capítulos</span>
             <span className="chip-puntos"><b>{total}</b> puntos</span>
+            <button className="chip-puntos boton-vista" onClick={() => setProg((p) => ({ ...p, vista: enMundo ? 'lista' : 'mundo' }))}
+              aria-pressed={!enMundo}>{enMundo ? 'Ver como lista' : 'Ver el mundo'}</button>
           </div>
         </div>
+        {enMundo ? (
+          <Mundo caps={CAPITULOS} prog={prog} abierto={abierto}
+            alEntrar={(id) => ir({ v: 'cap', id })} alMover={(id) => setProg((p) => ({ ...p, donde: id }))} />
+        ) : (
         <div className="ruta">
           {CAPITULOS.map((c, k) => {
             const r = prog.caps[c.id];
@@ -152,6 +160,7 @@ export const App: React.FC = () => {
             );
           })}
         </div>
+        )}
 
         <section className="sala-banner" aria-labelledby="t-sala">
           <div>
