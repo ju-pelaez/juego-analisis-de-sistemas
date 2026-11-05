@@ -10,7 +10,8 @@ import { Video } from './componentes/Video';
 import { Glifo } from './componentes/Glifo';
 import { Estrellas } from './componentes/Piezas';
 import { DURACION_PORTADA, Portada } from './remotion/Extras';
-import { Mundo } from './mundo/Mundo';
+import { Paseo } from './mundo/Paseo';
+import { ZONAS } from './mundo/zonas';
 // La sala en vivo (con el cliente de mensajes) se carga solo cuando se abre.
 const Sala = lazy(() => import('./sala/Sala').then((m) => ({ default: m.Sala })));
 
@@ -40,8 +41,6 @@ export const App: React.FC = () => {
   // Puntos: los de cada capítulo más los bonos encontrados en el mapa.
   const total = Object.values(prog.caps).reduce((s, r) => s + r.puntos, 0) + Object.values(prog.bonus || {}).reduce((s, n) => s + n, 0);
   const hechos = CAPITULOS.filter((c) => prog.caps[c.id]).length;
-  const abierto = (k: number) => prog.abiertoTodo || k === 0 || !!prog.caps[CAPITULOS[k - 1].id];
-  const enMundo = (prog.vista ?? 'mundo') === 'mundo';
   const ir = (v: Vista) => { callar(); setVista(v); window.scrollTo({ top: 0 }); };
 
   const guardar = (id: string, r: ResultadoCap) =>
@@ -95,7 +94,7 @@ export const App: React.FC = () => {
           </div>
           <div className="tarjeta">
             <h1>Aprende Análisis de Sistemas jugando</h1>
-            <p className="lead">{CAPITULOS.length} capítulos con la clase completa: el sistema, sus componentes, los diagramas BPMN (como en Bizagi), DFP y DFD, el árbol de problemas, el entorno y la factibilidad. Recorres cinco mundos vistos desde arriba: cada nivel es un capítulo con cinemática, fichas, minijuego e insignia, y hay casas del reto y cofres escondidos con puntos extra.</p>
+            <p className="lead">{CAPITULOS.length} capítulos con la clase completa: el sistema, sus componentes, los diagramas BPMN (como en Bizagi), DFP y DFD, el árbol de problemas, el entorno y la factibilidad. Caminas y saltas por cinco mundos como en un juego de plataformas: cada casa es un capítulo con cinemática, fichas, minijuego e insignia, y hay bloques de reto, datos y bloques secretos con puntos extra. Todo está abierto.</p>
             <form onSubmit={(e) => {
               e.preventDefault();
               const nombre = String(new FormData(e.currentTarget).get('nombre') || '').trim().slice(0, 30);
@@ -127,42 +126,51 @@ export const App: React.FC = () => {
         <div className="cabeza-mapa">
           <div>
             <p>Expediente de {prog.nombre || 'analista'}</p>
-            <h1>Tu ruta por la clase</h1>
+            <h1>El mundo del analista</h1>
           </div>
           <div className="medidor">
             <span className="chip-puntos"><b>{hechos}</b>/{CAPITULOS.length} capítulos</span>
             <span className="chip-puntos"><b>{total}</b> puntos</span>
-            <button className="chip-puntos boton-vista" onClick={() => setProg((p) => ({ ...p, vista: enMundo ? 'lista' : 'mundo' }))}
-              aria-pressed={!enMundo}>{enMundo ? 'Ver como lista' : 'Ver el mundo'}</button>
           </div>
         </div>
-        {enMundo ? (
-          <Mundo caps={CAPITULOS} prog={prog} abierto={abierto} puntos={total}
-            alEntrar={(id) => ir({ v: 'cap', id })} alMover={(pos) => setProg((p) => ({ ...p, pos }))}
-            alBono={(id, n) => setProg((p) => ({ ...p, bonus: { ...(p.bonus || {}), [id]: n } }))} />
-        ) : (
-        <div className="ruta">
-          {CAPITULOS.map((c, k) => {
-            const r = prog.caps[c.id];
-            const ok = abierto(k);
-            return (
-              <button key={c.id} className={'cap' + (c.juego.tipo === 'final' ? ' final' : '')} style={{ ['--c' as string]: `var(--c-${c.color})` }}
-                disabled={!ok} onClick={() => { sonar('tic'); ir({ v: 'cap', id: c.id }); }}
-                aria-label={`Capítulo ${c.n}: ${c.titulo}. ${r ? `Completado con ${r.estrellas} estrellas` : ok ? 'Disponible' : 'Bloqueado: termina el anterior'}`}>
-                <span className="ico"><Glifo id={c.id} size={32} /></span>
-                <span>
-                  <span className="num">CAPÍTULO {String(c.n).padStart(2, '0')}</span>
-                  <h3>{c.titulo}</h3>
-                  <p>{c.sub}</p>
-                </span>
-                <span className="estado">
-                  {r ? <><Estrellas n={r.estrellas} /><span>{r.puntos} pts</span></> : ok ? <span>Jugar →</span> : <span aria-hidden="true">🔒</span>}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        )}
+        {/* el mundo para caminar */}
+        <Paseo caps={CAPITULOS} prog={prog} puntos={total}
+          alEntrar={(id) => ir({ v: 'cap', id })} alMover={(pos) => setProg((p) => ({ ...p, pos }))}
+          alBono={(id, n) => setProg((p) => ({ ...p, bonus: { ...(p.bonus || {}), [id]: n } }))} />
+
+        {/* todos los capítulos, ordenados por mundo: se puede entrar a cualquiera */}
+        <section className="catalogo" aria-labelledby="t-catalogo">
+          <h2 id="t-catalogo">Todos los capítulos</h2>
+          <p className="catalogo-ayuda">Todo está abierto: entra al tema que necesites, en el orden que quieras.</p>
+          {ZONAS.map((z, zi) => (
+            <div key={z.id} className="catalogo-mundo">
+              <h3 className="cm-titulo" style={{ ['--cielo' as string]: z.cielo[0] }}><span>MUNDO {zi + 1}</span> {z.nombre}</h3>
+              <p className="cm-pista">{z.pista}</p>
+              <div className="cm-caps">
+                {z.caps.map((id) => {
+                  const c = CAPITULOS.find((x) => x.id === id);
+                  if (!c) return null;
+                  const r = prog.caps[c.id];
+                  return (
+                    <button key={c.id} className="ficha-cap" style={{ ['--c' as string]: `var(--c-${c.color})` }} onClick={() => { sonar('tic'); ir({ v: 'cap', id: c.id }); }}
+                      aria-label={`Capítulo ${c.n}: ${c.titulo}. ${r ? `Ganado con ${r.estrellas} estrellas` : 'Por jugar'}`}>
+                      <span className="fc-cabeza">
+                        <span className="ico"><Glifo id={c.id} size={28} /></span>
+                        <span><span className="num">CAPÍTULO {String(c.n).padStart(2, '0')}</span><b>{c.titulo}</b></span>
+                      </span>
+                      <span className="fc-sub">{c.sub}</span>
+                      <span className="fc-temas">{c.fichas.slice(0, 4).map((f) => <span key={f.titulo}>{f.titulo}</span>)}</span>
+                      <span className="fc-pie">
+                        <span>🎮 {c.juego.tipo === 'final' ? 'Reto final con certificado' : c.juego.titulo}</span>
+                        {r ? <span className="fc-hecho"><Estrellas n={r.estrellas} /> {r.puntos} pts</span> : <span className="fc-jugar">Jugar →</span>}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </section>
 
         <section className="sala-banner" aria-labelledby="t-sala">
           <div>
@@ -185,9 +193,6 @@ export const App: React.FC = () => {
         </section>
 
         <div className="pie-mapa">
-          <button className="btn fantasma" onClick={() => setProg((p) => ({ ...p, abiertoTodo: !p.abiertoTodo }))} aria-pressed={prog.abiertoTodo}>
-            {prog.abiertoTodo ? 'Volver al orden de la ruta' : 'Modo profe: abrir todos los capítulos'}
-          </button>
           <button className="btn fantasma" onClick={() => ir({ v: 'inicio' })}>Cambiar nombre</button>
           <button className="btn fantasma" onClick={() => { if (confirm('¿Borrar todo el progreso de este aparato?')) setProg((p) => ({ ...p, caps: {}, bonus: {}, pos: undefined })); }}>Reiniciar progreso</button>
         </div>
