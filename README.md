@@ -10,6 +10,7 @@ Juego web para aprender **Análisis de Sistemas** capítulo por capítulo.
 - Debajo del juego están todos los capítulos ordenados por mundo, con sus temas, para entrar directo al que se necesite.
 - 14 capítulos: qué hace un analista, el sistema, entrada-proceso-salida y control, actores, datos, procesos, modelado de procesos con BPMN (como en Bizagi), diagrama de flujo de procesos (DFP), diagrama de flujo de datos (DFD), mecanismos de control, árbol de problemas, entorno, factibilidad y viabilidad, y un reto final con certificado.
 - Cada capítulo tiene una cinemática, fichas cortas, un minijuego distinto, preguntas de control y una insignia.
+- **Certificado:** quien completa todos los capítulos recibe un certificado con su nombre en letra cursiva, firmas y sello, listo para imprimir o guardar en PDF. Por eso al empezar se escribe el nombre completo.
 - La profe Ruth Dary es la guía que explica cada tema.
 - **Sala en vivo:** el proyector muestra un QR, todo el salón entra desde el celular y compite en equipos (Actores, Datos, Procesos y Control), con chat y emoticones. Cuatro modos: Clásico; Matriz factible / viable (propuestas para ubicar en la matriz, también se abre desde el capítulo de factibilidad); Relámpago (verdadero o falso en 8 segundos); y Cofres del analista (cada acierto abre un cofre sorpresa).
 - Funciona en celular y en proyector, con modo claro, sonido opcional y respeto por la opción de menos movimiento.

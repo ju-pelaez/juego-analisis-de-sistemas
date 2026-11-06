@@ -12,6 +12,7 @@ import { Estrellas } from './componentes/Piezas';
 import { DURACION_PORTADA, Portada } from './remotion/Extras';
 import { Paseo } from './mundo/Paseo';
 import { ZONAS } from './mundo/zonas';
+import { Diploma } from './componentes/Diploma';
 // La sala en vivo (con el cliente de mensajes) se carga solo cuando se abre.
 const Sala = lazy(() => import('./sala/Sala').then((m) => ({ default: m.Sala })));
 
@@ -78,7 +79,8 @@ export const App: React.FC = () => {
       <div className="app">
         {barra}
         <Capitulo key={cap.id} cap={cap} nombre={prog.nombre} siguiente={CAPITULOS[k + 1]} puntosTotales={total}
-          alGuardar={(r) => guardar(cap.id, r)} alSalir={() => ir({ v: 'mapa' })} alIr={(id) => ir({ v: 'cap', id })} />
+          alGuardar={(r) => guardar(cap.id, r)} alSalir={() => ir({ v: 'mapa' })} alIr={(id) => ir({ v: 'cap', id })}
+          alCertificado={() => { ir({ v: 'mapa' }); setTimeout(() => document.getElementById('certificado')?.scrollIntoView({ behavior: 'smooth' }), 350); }} />
       </div>
     );
   }
@@ -97,14 +99,15 @@ export const App: React.FC = () => {
             <p className="lead">{CAPITULOS.length} capítulos con la clase completa: el sistema, sus componentes, los diagramas BPMN (como en Bizagi), DFP y DFD, el árbol de problemas, el entorno y la factibilidad. Caminas y saltas por cinco mundos como en un juego de plataformas: cada casa es un capítulo con cinemática, fichas, minijuego e insignia, y hay bloques de reto, datos y bloques secretos con puntos extra. Todo está abierto.</p>
             <form onSubmit={(e) => {
               e.preventDefault();
-              const nombre = String(new FormData(e.currentTarget).get('nombre') || '').trim().slice(0, 30);
+              const nombre = String(new FormData(e.currentTarget).get('nombre') || '').trim().replace(/\s+/g, ' ').slice(0, 40);
+              if (nombre.length < 2) return;
               sonar('entra');
               setProg((p) => ({ ...p, nombre }));
               ir({ v: 'mapa' });
             }}>
               <div className="campo">
-                <label htmlFor="nombre">¿Cómo te llamas?</label>
-                <input id="nombre" name="nombre" defaultValue={prog.nombre} maxLength={30} autoComplete="given-name" placeholder="Tu nombre para el certificado" />
+                <label htmlFor="nombre">¿Cómo te llamas? <small>(nombre completo: va en tu certificado)</small></label>
+                <input id="nombre" name="nombre" defaultValue={prog.nombre} maxLength={40} autoComplete="name" placeholder="Nombre y apellido (sale en tu certificado)" required minLength={2} />
               </div>
               <div className="fila-btn">
                 <button className="btn" type="submit">{prog.nombre ? 'Continuar' : 'Empezar'}</button>
@@ -170,6 +173,25 @@ export const App: React.FC = () => {
               </div>
             </div>
           ))}
+        </section>
+
+        {/* certificado: solo para quien completa TODOS los capítulos */}
+        <section id="certificado" className="seccion-cert" aria-labelledby="t-cert">
+          <h2 id="t-cert">🎓 Tu certificado</h2>
+          {hechos === CAPITULOS.length ? (
+            <>
+              <p className="catalogo-ayuda">¡Completaste todo el juego! Imprímelo o guárdalo en PDF (en la ventana de impresión elige «Guardar como PDF» y hoja horizontal).</p>
+              <Diploma nombre={prog.nombre || 'Analista'} fecha={new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}
+                puntos={total} estrellas={Object.values(prog.caps).reduce((s, r) => s + r.estrellas, 0)} capitulos={CAPITULOS.length} />
+              <div className="fila-btn"><button className="btn" onClick={() => window.print()}>🖨️ Imprimir o guardar PDF</button></div>
+            </>
+          ) : (
+            <div className="cert-bloqueado">
+              <p>Se entrega a quien complete <b>los {CAPITULOS.length} capítulos</b>, con su nombre en letra cursiva, firmas y sello. Llevas <b>{hechos}</b> de {CAPITULOS.length}.</p>
+              <div className="cert-barra" role="progressbar" aria-valuemin={0} aria-valuemax={CAPITULOS.length} aria-valuenow={hechos}><i style={{ width: `${(hechos / CAPITULOS.length) * 100}%` }} /></div>
+              <p className="cert-faltan">Te faltan: {CAPITULOS.filter((c) => !prog.caps[c.id]).map((c) => c.titulo).join(' · ')}</p>
+            </div>
+          )}
         </section>
 
         <section className="sala-banner" aria-labelledby="t-sala">

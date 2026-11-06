@@ -69,8 +69,8 @@ const VistaFicha: React.FC<{ f: Ficha; cap: Cap }> = ({ f, cap }) => (
 
 export const Capitulo: React.FC<{
   cap: Cap; nombre: string; siguiente?: Cap; puntosTotales: number;
-  alGuardar: (r: ResultadoCap) => void; alSalir: () => void; alIr: (id: string) => void;
-}> = ({ cap, nombre, siguiente, puntosTotales, alGuardar, alSalir, alIr }) => {
+  alGuardar: (r: ResultadoCap) => void; alSalir: () => void; alIr: (id: string) => void; alCertificado: () => void;
+}> = ({ cap, nombre, siguiente, puntosTotales, alGuardar, alSalir, alIr, alCertificado }) => {
   const [fase, setFase] = useState<Fase>('cine');
   const [ficha, setFicha] = useState(0);
   // Mini retos de las fichas: ficha → acertó o no. Suman al puntaje del capítulo.
@@ -202,7 +202,7 @@ export const Capitulo: React.FC<{
             <img className="profe-res" src={fotoProfe('celebra')} alt={`${NOMBRE_PROFE} celebrando tu resultado`} width={150} height={200} />
             <h2 id="t-res">{esFinal ? (aprobado ? '¡Eres analista certificado!' : 'Casi lo logras') : `¡Ganaste «${cap.insignia}»${nombre ? `, ${nombre.split(' ')[0]}` : ''}!`}</h2>
             <p>{esFinal
-              ? (aprobado ? `Resolviste el caso «${caso}». Imprime o guarda tu certificado.` : `Necesitas el 60 % para el certificado. Intenta con otro caso.`)
+              ? (aprobado ? `Resolviste el caso «${caso}». Tu certificado te espera en el mapa (se entrega al completar todos los capítulos).` : `Necesitas el 60 % para el certificado. Intenta con otro caso.`)
               : 'Mira cómo te fue y sigue con el próximo capítulo.'}</p>
             <div className="cifras">
               <div><b>{resultado.aciertos}/{resultado.total}</b>aciertos</div>
@@ -210,7 +210,7 @@ export const Capitulo: React.FC<{
               <div><Estrellas n={resultado.estrellas} />estrellas</div>
             </div>
             <div className="fila-btn">
-              {esFinal && aprobado && <button className="btn" onClick={() => window.print()}>Imprimir o guardar PDF</button>}
+              {esFinal && aprobado && <button className="btn" onClick={alCertificado}>🎓 Ver mi certificado</button>}
               {esFinal && !aprobado && <button className="btn" onClick={() => { setResultado(null); ir('juego'); }}>Intentar otro caso</button>}
               {siguiente && <button className="btn" onClick={() => alIr(siguiente.id)}>Siguiente: {siguiente.titulo} →</button>}
               {!esFinal && <button className="btn sec" onClick={() => { setFicha(0); setResultado(null); ir('juego'); }}>Repetir minijuego</button>}
@@ -220,16 +220,6 @@ export const Capitulo: React.FC<{
               <button className="btn sec" onClick={alSalir}>Volver al mapa</button>
             </div>
           </div>
-          {esFinal && aprobado && (
-            <div className="cert-impreso" aria-hidden="true">
-              <p style={{ letterSpacing: '.2em', fontWeight: 700 }}>CERTIFICADO</p>
-              <h1>Analista de Sistemas</h1>
-              <p>Se otorga a</p>
-              <p className="nombre">{nombre || 'Analista'}</p>
-              <p style={{ marginTop: 18, maxWidth: 560 }}>por superar el reto final de Análisis de Sistemas con el caso «{caso}» y reunir {puntosTotales} puntos en el juego Modo Analista.</p>
-              <p style={{ marginTop: 28 }}>La lógica y la enseñanza: maestra Ruth Dary Escobar Sarria<br />Desarrollo: Juan Pablo Peláez Pino<br />{fecha}</p>
-            </div>
-          )}
         </section>
       )}
     </div>
