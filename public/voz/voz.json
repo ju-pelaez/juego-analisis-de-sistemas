@@ -243,14 +243,6 @@
   "ms": 6200,
   "h": "799593979d"
  },
- "factibilidad-lema": {
-  "ms": 4260,
-  "h": "c939850e01"
- },
- "factibilidad-f0": {
-  "ms": 26300,
-  "h": "8984b75288"
- },
  "factibilidad-f1": {
   "ms": 22060,
   "h": "27e162b487"
@@ -258,10 +250,6 @@
  "factibilidad-f2": {
   "ms": 37780,
   "h": "576b3dce97"
- },
- "factibilidad-f3": {
-  "ms": 18760,
-  "h": "cdd76c042a"
  },
  "reto-dice": {
   "ms": 5440,
