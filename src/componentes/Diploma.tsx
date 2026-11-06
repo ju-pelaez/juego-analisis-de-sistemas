@@ -36,10 +36,9 @@ export const Diploma: React.FC<{ nombre: string; fecha: string; puntos: number; 
       </p>
       <div className="dp-pie">
         <div className="dp-firma">
-          <span className="dp-rubrica">Ruth Dary Escobar S.</span>
+          <span className="dp-rubrica">Ruth Dary Escobar Sarria</span>
           <i />
           <b>Maestra Ruth Dary Escobar Sarria</b>
-          <small>Análisis de Sistemas · La lógica y la enseñanza</small>
         </div>
         <div className="dp-sello" aria-hidden="true">
           <svg viewBox="0 0 120 120">
@@ -50,10 +49,10 @@ export const Diploma: React.FC<{ nombre: string; fecha: string; puntos: number; 
           <span><Glifo id="reto" size={44} color="#F2D27A" /></span>
         </div>
         <div className="dp-firma">
-          <span className="dp-rubrica">Juan P. Peláez</span>
+          <span className="dp-rubrica">Juan Pablo Peláez</span>
           <i />
           <b>Juan Pablo Peláez Pino</b>
-          <small>Desarrollo · Ingeniería de Sistemas, Universidad de la Amazonia</small>
+          <small>Desarrollo del juego</small>
         </div>
       </div>
       <p className="dp-fecha">Florencia, Caquetá · {fecha} · Código {codigo(nombre + fecha + puntos)}</p>
