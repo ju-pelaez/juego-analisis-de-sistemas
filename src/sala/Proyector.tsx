@@ -6,10 +6,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { abrirCanal, limpiar, nuevoCodigo, type Canal, type Mqtt } from './canal';
 import { partida, TEMAS_SALA, type PreguntaSala } from './banco';
 import { Qr } from './Qr';
-import { COLORES_OP, EQUIPOS, FORMAS, PREGUNTAS, TIEMPO, type EstadoSala, type MsgChat, type MsgEntra } from './tipos';
+import { COLORES_OP, EQUIPOS, FORMAS, MODOS, modoDe, type EstadoSala, type Modo, type MsgChat, type MsgEntra } from './tipos';
 import { sonar, useMenosMovimiento } from '../estado';
 
-type Jugador = { n: string; av: string; eq: number; p: number; racha: number; ult: number; enLinea: boolean };
+type Jugador = { n: string; av: string; eq: number; p: number; racha: number; ult: number; enLinea: boolean; ronda: number };
 type Burbuja = { k: number; n: string; av: string; eq: number; txt: string };
 type Flotante = { k: number; emo: string; x: number };
 
@@ -30,25 +30,32 @@ export const Proyector: React.FC<{ mqtt: Mqtt; alSalir: () => void }> = ({ mqtt,
   const t0 = useRef(0);
   const [fase, setFase] = useState<EstadoSala['fase']>('sala');
   const [i, setI] = useState(0);
+  // Modo de juego: se puede abrir directo con ?juego=matriz (desde el capítulo de factibilidad).
+  const [modo, setModo] = useState<Modo>(() => modoDe(new URLSearchParams(location.search).get('juego') || '').id);
+  const TIEMPO = modoDe(modo).tiempo;
+  const PREGUNTAS = modoDe(modo).preguntas;
+  const cofres = useRef(new Map<string, string>());
+  const [feed, setFeed] = useState<{ k: number; t: string }[]>([]);
   const [quedan, setQuedan] = useState(TIEMPO);
   const [chatOn, setChatOn] = useState(true);
   const [temaSala, setTemaSala] = useState('todo');
   const [chat, setChat] = useState<Burbuja[]>([]);
   const [flot, setFlot] = useState<Flotante[]>([]);
-  const ref = useRef({ fase, i, chatOn });
-  ref.current = { fase, i, chatOn };
+  const ref = useRef({ fase, i, chatOn, modo, TIEMPO });
+  ref.current = { ...ref.current, fase, i, chatOn, modo, TIEMPO };
   const cuenta = useRef(0);
 
   // ---------- estado que se manda a los celulares ----------
   const estado = useCallback((): EstadoSala => {
-    const { fase, i, chatOn } = ref.current;
+    const { fase, i, chatOn, modo, TIEMPO } = ref.current;
     const q = preguntas.current[i];
     const eq = [0, 0, 0, 0];
     const fichas: EstadoSala['jug'] = {};
     jug.current.forEach((j, id) => { eq[j.eq] += j.p; fichas[id] = [j.p, j.eq, j.ult, j.racha]; });
     const conteo = q ? q.ops.map((_, k) => [...resp.current.values()].filter((r) => r.k === k).length) : undefined;
     return {
-      v: 1, fase, i, total: preguntas.current.length || PREGUNTAS, jug: fichas, eq, chat: chatOn,
+      v: 1, fase, i, total: preguntas.current.length || modoDe(modo).preguntas, jug: fichas, eq, chat: chatOn, modo, tiempo: TIEMPO,
+      ...(modo === 'cofres' && cofres.current.size ? { cof: Object.fromEntries(cofres.current) } : {}),
       ...(q && fase !== 'sala' ? { q: { t: q.t, ops: q.ops, tema: q.tema } } : {}),
       ...(fase === 'pregunta' ? { quedan: Math.max(0, TIEMPO - (performance.now() - t0.current) / 1000), nResp: resp.current.size } : {}),
       ...(fase === 'revela' || fase === 'fin' ? { ok: q?.ok, por: q?.por, conteo } : {}),
@@ -116,7 +123,7 @@ export const Proyector: React.FC<{ mqtt: Mqtt; alSalir: () => void }> = ({ mqtt,
         const gente = [0, 0, 0, 0];
         jug.current.forEach((j) => gente[j.eq]++);
         const eq = gente.indexOf(Math.min(...gente));
-        jug.current.set(m.id, { n: limpiar(m.n, 20) || 'Analista', av: limpiar(m.av, 4) || '🦉', eq, p: 0, racha: 0, ult: -1, enLinea: true });
+        jug.current.set(m.id, { n: limpiar(m.n, 20) || 'Analista', av: limpiar(m.av, 4) || '🦉', eq, p: 0, racha: 0, ult: -1, enLinea: true, ronda: 0 });
         sonar('entra');
       }
       repintar();
@@ -132,6 +139,16 @@ export const Proyector: React.FC<{ mqtt: Mqtt; alSalir: () => void }> = ({ mqtt,
       publicar();
       const enLinea = [...jug.current.values()].filter((j) => j.enLinea).length;
       if (resp.current.size >= enLinea) setTimeout(revelar, 400);
+    } else if (m.t === 'cofre') {
+      // Modo cofres: quien acertó elige uno de tres cofres y el proyector decide la sorpresa.
+      const j = jug.current.get(m.id);
+      if (!j || ref.current.modo !== 'cofres' || ref.current.fase !== 'revela' || m.i !== ref.current.i || j.ult !== 1 || cofres.current.has(m.id)) return;
+      const t = abrirCofre(m.id, j);
+      cofres.current.set(m.id, t);
+      setFeed((f) => [...f.slice(-6), { k: Math.random(), t: `${j.av} ${j.n}: ${t}` }]);
+      sonar('logro');
+      repintar();
+      publicar();
     } else if (m.t === 'adios') {
       const j = jug.current.get(m.id);
       if (j) { j.enLinea = false; repintar(); }
@@ -151,9 +168,25 @@ export const Proyector: React.FC<{ mqtt: Mqtt; alSalir: () => void }> = ({ mqtt,
     }
   };
 
+  // Sorpresas de los cofres (las buenas salen más seguido).
+  const abrirCofre = (id: string, j: Jugador) => {
+    const r = Math.random();
+    if (r < 0.28) { j.p += 200; return '+200 puntos'; }
+    if (r < 0.46) { j.p += 400; return '+400 puntos'; }
+    if (r < 0.6) { j.p += j.ronda; return `¡Doble! +${j.ronda} otra vez`; }
+    if (r < 0.74) { jug.current.forEach((o) => { if (o.eq === j.eq) o.p += 150; }); return `Bono de equipo: +150 para todo ${EQUIPOS[j.eq].n}`; }
+    if (r < 0.88) {
+      const primero = [...jug.current.entries()].filter(([oid]) => oid !== id).sort((a, b) => b[1].p - a[1].p)[0];
+      if (primero && primero[1].p > 0) { const q = Math.min(150, primero[1].p); primero[1].p -= q; j.p += q; return `¡Le robaste ${q} a ${primero[1].n}!`; }
+      j.p += 150; return '+150 puntos';
+    }
+    return 'Cofre vacío… ¡suerte en la próxima!';
+  };
+
   // ---------- partida ----------
   const lanzar = (k: number) => {
     resp.current.clear();
+    cofres.current.clear();
     t0.current = performance.now();
     setQuedan(TIEMPO);
     ref.current = { ...ref.current, fase: 'pregunta', i: k };
@@ -163,8 +196,9 @@ export const Proyector: React.FC<{ mqtt: Mqtt; alSalir: () => void }> = ({ mqtt,
     publicar(true);
   };
   const empezar = () => {
-    preguntas.current = partida(PREGUNTAS, temaSala);
-    jug.current.forEach((j) => { j.p = 0; j.racha = 0; j.ult = -1; });
+    preguntas.current = partida(PREGUNTAS, temaSala, modo);
+    setFeed([]);
+    jug.current.forEach((j) => { j.p = 0; j.racha = 0; j.ult = -1; j.ronda = 0; });
     lanzar(0);
   };
   const revelar = () => {
@@ -172,10 +206,12 @@ export const Proyector: React.FC<{ mqtt: Mqtt; alSalir: () => void }> = ({ mqtt,
     const q = preguntas.current[ref.current.i];
     jug.current.forEach((j, id) => {
       const r = resp.current.get(id);
+      j.ronda = 0;
       if (!r) { j.ult = -1; j.racha = 0; return; }
       if (r.k === q.ok) {
         j.racha += 1;
-        j.p += 500 + Math.round(500 * Math.max(0, 1 - r.ms / (TIEMPO * 1000))) + Math.min(200, (j.racha - 1) * 50);
+        j.ronda = 500 + Math.round(500 * Math.max(0, 1 - r.ms / (ref.current.TIEMPO * 1000))) + Math.min(200, (j.racha - 1) * 50);
+        j.p += j.ronda;
         j.ult = 1;
       } else { j.ult = 0; j.racha = 0; }
     });
@@ -198,7 +234,7 @@ export const Proyector: React.FC<{ mqtt: Mqtt; alSalir: () => void }> = ({ mqtt,
   useEffect(() => {
     if (fase !== 'pregunta') return;
     const t = setInterval(() => {
-      const q = Math.max(0, TIEMPO - (performance.now() - t0.current) / 1000);
+      const q = Math.max(0, ref.current.TIEMPO - (performance.now() - t0.current) / 1000);
       setQuedan(q);
       if (q <= 0) { clearInterval(t); revelar(); } else publicar();
     }, 1000);
@@ -245,14 +281,21 @@ export const Proyector: React.FC<{ mqtt: Mqtt; alSalir: () => void }> = ({ mqtt,
               <div className="gente">
                 {lista.map((j) => <span key={j.id} className={'persona' + (j.enLinea ? '' : ' fuera')} style={{ ['--c' as string]: EQUIPOS[j.eq].c }}>{j.av} {j.n}</span>)}
               </div>
-              <div className="campo">
+              <div className="modos-sala" role="radiogroup" aria-label="Modo de juego">
+                {MODOS.map((m) => (
+                  <button key={m.id} role="radio" aria-checked={modo === m.id} className={'modo-sala' + (modo === m.id ? ' on' : '')} onClick={() => setModo(m.id)}>
+                    <span className="ico">{m.ico}</span><b>{m.n}</b><small>{m.desc}</small>
+                  </button>
+                ))}
+              </div>
+              {modo !== 'matriz' && modo !== 'relampago' && <div className="campo">
                 <label htmlFor="tema-sala">Tema de hoy</label>
                 <select id="tema-sala" value={temaSala} onChange={(e) => setTemaSala(e.target.value)}>
                   {TEMAS_SALA.map((t) => <option key={t.id} value={t.id}>{t.n}</option>)}
                 </select>
-              </div>
+              </div>}
               <div className="fila-btn">
-                <button className="btn" onClick={empezar} disabled={!lista.length || !codigo}>Empezar · {PREGUNTAS} preguntas</button>
+                <button className="btn" onClick={empezar} disabled={!lista.length || !codigo}>{modoDe(modo).ico} Empezar · {PREGUNTAS} preguntas</button>
                 <button className="btn sec" onClick={alSalir}>Cerrar sala</button>
               </div>
             </div>
@@ -263,7 +306,7 @@ export const Proyector: React.FC<{ mqtt: Mqtt; alSalir: () => void }> = ({ mqtt,
           <section className="ronda" aria-live="polite">
             <div className="ronda-cabeza">
               <span className="chip-puntos">Pregunta <b>{i + 1}</b>/{preguntas.current.length}</span>
-              <span className="tema-sala">{q.tema}</span>
+              <span className="tema-sala">{modoDe(modo).ico} {modoDe(modo).n} · {q.tema}</span>
               {fase === 'pregunta'
                 ? <span className="reloj-sala" style={{ ['--p' as string]: quedan / TIEMPO }}><b>{Math.ceil(quedan)}</b></span>
                 : <span className="chip-puntos"><b>{resp.current.size}</b> respondieron</span>}
@@ -286,6 +329,12 @@ export const Proyector: React.FC<{ mqtt: Mqtt; alSalir: () => void }> = ({ mqtt,
             ) : (
               <div className="revela-sala">
                 <p className="por-sala"><b>¿Por qué?</b> {q.por}</p>
+                {modo === 'cofres' && (
+                  <div className="feed-cofres" aria-live="polite">
+                    <p><b>🎁 Los que acertaron abren un cofre en su celular</b> · {cofres.current.size} abiertos</p>
+                    {feed.slice(-4).map((f) => <span key={f.k}>{f.t}</span>)}
+                  </div>
+                )}
                 <ol className="top-sala">
                   {ranking.slice(0, 5).map((j) => (
                     <li key={j.id} style={{ ['--c' as string]: EQUIPOS[j.eq].c }}><span>{j.av} {j.n}{j.racha >= 3 ? ' 🔥' : ''}</span><b>{j.p}</b></li>

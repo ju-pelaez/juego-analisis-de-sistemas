@@ -4,7 +4,7 @@
 // (frases rápidas, texto corto y emoticones que vuelan en el proyector).
 import React, { useEffect, useRef, useState } from 'react';
 import { abrirCanal, limpiar, type Canal, type Mqtt } from './canal';
-import { AVATARES, COLORES_OP, EQUIPOS, FORMAS, FRASES, REACCIONES, type EstadoSala, type MsgChat } from './tipos';
+import { AVATARES, COLORES_OP, EQUIPOS, FORMAS, FRASES, modoDe, REACCIONES, type EstadoSala, type MsgChat } from './tipos';
 import { sonar, vibrar } from '../estado';
 
 const leer = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
@@ -34,6 +34,7 @@ export const Celular: React.FC<{ mqtt: Mqtt; codigo: string; alSalir: () => void
   const canal = useRef<Canal | null>(null);
   const cuenta = useRef(0);
   const faseAntes = useRef('');
+  const [cofreElegido, setCofreElegido] = useState<{ i: number; k: number } | null>(null);
 
   useEffect(() => {
     if (!dentro) return;
@@ -156,12 +157,13 @@ export const Celular: React.FC<{ mqtt: Mqtt; codigo: string; alSalir: () => void
           <h2>¡Estás dentro!</h2>
           <p className="pista">{eq ? <>Tu equipo es <b style={{ color: eq.c }}>{eq.n}</b>: {eq.q}</> : 'Asignando equipo…'}</p>
           <p className="pista">Somos {totalJug}. Mira el proyector: el juego empieza pronto.</p>
+          <p className="modo-cel">{modoDe(est.modo).ico} <b>{modoDe(est.modo).n}</b><br /><small>{modoDe(est.modo).desc}</small></p>
         </div>
       )}
 
       {est?.fase === 'pregunta' && est.q && (
         <div className="pregunta-cel">
-          <div className="ronda-cabeza"><span>Pregunta {est.i + 1}/{est.total}</span><span className="reloj-mini">{Math.ceil(quedan)} s</span></div>
+          <div className="ronda-cabeza"><span>{modoDe(est.modo).ico} {est.i + 1}/{est.total}</span><span className="reloj-mini">{Math.ceil(quedan)} s</span></div>
           <p className="enunciado-cel">{est.q.t}</p>
           {elegida?.i === est.i ? (
             <div className="tarjeta centro"><h2>¡Respuesta enviada!</h2><p className="pista">Elegiste {FORMAS[elegida.k]} «{est.q.ops[elegida.k]}». Espera a que todos respondan.</p></div>
@@ -182,6 +184,18 @@ export const Celular: React.FC<{ mqtt: Mqtt; codigo: string; alSalir: () => void
           <h2>{yo?.[2] === 1 ? '¡Correcto!' : yo?.[2] === 0 ? 'Esta vez no' : 'No alcanzaste'}</h2>
           <p>Era {FORMAS[est.ok ?? 0]} <b>{est.q.ops[est.ok ?? 0]}</b></p>
           <p className="pista">{est.por}</p>
+          {est.modo === 'cofres' && yo?.[2] === 1 && (
+            est.cof?.[id] ? <p className="premio-cofre">🎁 {est.cof[id]}</p>
+              : cofreElegido?.i === est.i ? <p className="pista">Abriendo el cofre…</p>
+                : (
+                  <div className="cofres-cel" role="group" aria-label="Elige un cofre">
+                    <p><b>¡Elige un cofre!</b></p>
+                    {[0, 1, 2].map((k) => (
+                      <button key={k} onClick={() => { setCofreElegido({ i: est.i, k }); sonar('pop'); vibrar(30); canal.current?.publicar('entra', { t: 'cofre', id, i: est.i, k }); }} aria-label={`Cofre ${k + 1}`}>🎁</button>
+                    ))}
+                  </div>
+                )
+          )}
           {yo && <p className="puesto">Vas en el puesto <b>{puesto}</b> de {totalJug}{yo[3] >= 3 ? ` · racha de ${yo[3]} 🔥` : ''}</p>}
         </div>
       )}

@@ -175,7 +175,7 @@ export const App: React.FC = () => {
         <section className="sala-banner" aria-labelledby="t-sala">
           <div>
             <h2 id="t-sala">Sala en vivo para todo el salón</h2>
-            <p>Abre la sala en el proyector: los estudiantes entran con el QR desde el celular, responden en equipos A-D-P-C, chatean y mandan emoticones en vivo.</p>
+            <p>Abre la sala en el proyector: los estudiantes entran con el QR desde el celular y compiten en equipos A-D-P-C. Cuatro modos: Clásico, Matriz factible / viable, Relámpago y Cofres del analista. Con chat y emoticones en vivo.</p>
           </div>
           <button className="btn" onClick={() => ir({ v: 'sala' })}>Abrir sala con QR</button>
         </section>

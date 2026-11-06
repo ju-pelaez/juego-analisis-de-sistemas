@@ -214,6 +214,9 @@ export const Capitulo: React.FC<{
               {esFinal && !aprobado && <button className="btn" onClick={() => { setResultado(null); ir('juego'); }}>Intentar otro caso</button>}
               {siguiente && <button className="btn" onClick={() => alIr(siguiente.id)}>Siguiente: {siguiente.titulo} →</button>}
               {!esFinal && <button className="btn sec" onClick={() => { setFicha(0); setResultado(null); ir('juego'); }}>Repetir minijuego</button>}
+              {cap.id === 'factibilidad' && (
+                <button className="btn sec" onClick={() => location.assign('/?modo=sala&juego=matriz')}>⚖️ Jugar la Matriz con el salón (QR)</button>
+              )}
               <button className="btn sec" onClick={alSalir}>Volver al mapa</button>
             </div>
           </div>
