@@ -784,7 +784,10 @@ button.fase[disabled] { cursor: default; }
 .dp-otorga { font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 2cqw; color: #4A5470; }
 .dp-nombre { font-family: 'Great Vibes', 'Brush Script MT', cursive; font-size: 7.6cqw; line-height: 1.05; color: #8A6A1F; padding: 0 4cqw .4cqw; border-bottom: 2px solid #B8902B; max-width: 92%; overflow-wrap: anywhere; }
 .dp-texto { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.85cqw; line-height: 1.4; max-width: 78%; color: #2B3556; }
-.dp-pie { display: grid; grid-template-columns: 1fr auto 1fr; gap: 3cqw; align-items: end; width: 100%; }
+.dp-pie { display: flex; justify-content: center; gap: 6cqw; align-items: end; width: 100%; }
+.dp-pie .dp-firma { min-width: 34cqw; }
+.dp-animo { font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 1.75cqw; color: #8A6A1F; max-width: 72%; }
+.dp-credito { position: absolute; right: 12.5%; bottom: 6.5%; line-height: 1; margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: .82cqw; color: #1F2A4A; opacity: .55; letter-spacing: .03em; }
 .dp-firma { display: grid; justify-items: center; gap: .3cqw; }
 .dp-rubrica { font-family: 'Great Vibes', cursive; font-size: 3.2cqw; color: #1F2A4A; line-height: 1; }
 .dp-firma i { width: 90%; height: 1.5px; background: #1F2A4A; }

@@ -34,6 +34,7 @@ export const Diploma: React.FC<{ nombre: string; fecha: string; puntos: number; 
         el árbol de problemas, el entorno, la factibilidad y la viabilidad, y por superar el reto final.
         Reunió <b>{puntos} puntos</b> y <b>{estrellas} estrellas</b>.
       </p>
+      <p className="dp-animo">Hoy ya miras el mundo como un analista: primero entiendes el problema y después construyes la solución. ¡Felicitaciones!</p>
       <div className="dp-pie">
         <div className="dp-firma">
           <span className="dp-rubrica">Ruth Dary Escobar Sarria</span>
@@ -48,14 +49,9 @@ export const Diploma: React.FC<{ nombre: string; fecha: string; puntos: number; 
           </svg>
           <span><Glifo id="reto" size={44} color="#F2D27A" /></span>
         </div>
-        <div className="dp-firma">
-          <span className="dp-rubrica">Juan Pablo Peláez</span>
-          <i />
-          <b>Juan Pablo Peláez Pino</b>
-          <small>Desarrollo del juego</small>
-        </div>
       </div>
       <p className="dp-fecha">Florencia, Caquetá · {fecha} · Código {codigo(nombre + fecha + puntos)}</p>
     </div>
+    <p className="dp-credito">Desarrollador del software: Juan Pablo Peláez Pino</p>
   </article>
 );
